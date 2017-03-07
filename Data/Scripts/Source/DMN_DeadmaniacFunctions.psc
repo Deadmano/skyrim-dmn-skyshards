@@ -2,61 +2,76 @@ ScriptName DMN_DeadmaniacFunctions
 
 {A custom collection of functions by Deadmano
 to enhance Papyrus scripting.}
-;==============================================
-; Version: 0.0.1
-; Updated: 2017/01/17
+
+;============================================
+; Version: 0.1.0
+; Updated: 2017/01/28
 ;--------------------
-; HISTORY:
+; VERSION HISTORY:
 ;====================
-; 2017/01/28:
-;	*Added debugNotification.
-; 2017/01/17:
-; 	*Added StrVer3ToInt.
+; 0.1.0 | 2017/01/28:
+;	+Added debugNotification.
+; 	+Added ver3ToString.
+;	+Added ver3ToInteger.
+;	-Removed StrVer3ToInt.
+;	-->	Replaced by ver3ToInteger and ver3ToString.
+;
+; 0.0.1 | 2017/01/17:
+; 	+Added StrVer3ToInt.
 ;--------------------
 ; FUNCTIONS:
-;	-[debugNotification]: Takes a [GlobalVariable] which handles if the debug notifcations are shown and a [String] that displays the notification message.
-; 	-[StrVer3ToInt]: Takes a [string] in the format of Major/Minor/Release versioning (x.x.x) (direct or variable) and outputs it into a plain number [integer].
+;	[debugNotification]: Takes a [GlobalVariable] which handles if the debug notifcations are shown and a [String] that displays the notification message.
+;	[ver3ToInteger]: Takes a [String] in the format of Major/Minor/Release versioning ("X", "Y", "Z") (direct or variable) and outputs it into a plain number [Integer].
+;	[ver3ToString]: Takes a [String] in the format of Major/Minor/Release versioning ("X", "Y", "Z") (direct or variable) and outputs it into a formatted [String].
 ;===============
 
-Import StringUtil
 Import Debug
 
-; StrVer3ToInt: Takes the provided string input in Major/Minor/Release versioning format (x.x.x)
-; and outputs it into a plain number integer for use in calculations to check for version differences.
-;
-; EXAMPLE USAGE: 
-; String Property sVersionUsr Auto ; User's installed version.
-; String sVersionCur = "1.2.1" ; Current script version.
-; If (strVer3ToInt(sVersionUsr) < strVer3ToInt(sVersionCur)) ; Does direct integer comparison.
-; 	sVersionUsr = sVersionCur ; Sets the user's script version to the current script version.
-; EndIf
-; Debug.Notification(sVersionUsr) ; OUTPUT: 121.
-
-Int Function strVer3ToInt(String verStr) Global
-
-	String majorVerStr = getNthChar(verStr, 0)
-	String minorVerStr = getNthChar(verStr, 2)
-	String releaseVerStr = getNthChar(verStr, 4)
-
-	Int x1 = majorVerStr as Int
-	Int y1 = minorVerStr as Int
-	Int z1 = releaseVerStr as Int
-
-	Int verInt = (x1 * 100) + (y1 * 10) + z1
-	Return verInt
-
-EndFunction
-
-; debugNotification: Takes the provided GlobalVariable which decides if the provided String
+; debugNotification:
+; ------------------
+; Takes the provided GlobalVariable which decides if the provided String
 ; message is shown as a notification or not. It expects that your global variable is set to
 ; 1 for debug notifications to be shown. If the variable is 0 then no notifications are shown.
 ; 
-; EXAMPLE USAGE: 
+; EXAMPLE USAGE:
 ; GlobalVariable Property gDebugVariable Auto ; The global variable that handles your debug state.
 ; debugNotification(gDebugVariable, "This is my debug notification.") ; OUTPUT: This is my debug notification.
 
-String Function debugNotification(GlobalVariable gDebugVariable, String sDebugMessage) Global
+Function debugNotification(GlobalVariable gDebugVariable, String sDebugMessage) Global
 	If (gDebugVariable.GetValue() == 1)
 		Notification(sDebugMessage)
 	EndIf
+EndFunction
+
+; ver3ToString:
+; -------------
+; Takes the provided string input in Major/Minor/Release versioning format, seperated by
+; commas ("X", "Y", "Z") and outputs it into a formatted string for displaying purposes.
+
+; EXAMPLE USAGE:
+; ver3ToString("1", "2", "3") ; OUTPUT: 1.2.3
+; ver3ToString("99", "99", "9") ; OUTPUT: 99.99.9
+; LIMIT: "infinite", "99", "9".
+
+String Function ver3ToString(String sMajorVer, String sMinorVer, String sReleaseVer) Global
+	String sVersion = sMajorVer + "." + sMinorVer + "." + sReleaseVer
+	Return sVersion as String
+EndFunction
+
+; ver3ToInteger:
+; --------------
+; Takes the provided string input in Major/Minor/Release versioning format, seperated by
+; commas ("X", "Y", "Z") and outputs it into a plain number integer for calculation purposes.
+
+; EXAMPLE USAGE:
+; ver3ToInteger("1", "2", "3") ; OUTPUT: 1203
+; ver3ToInteger("99", "99", "9") ; OUTPUT: 99999
+; LIMIT: "infinite", "99", "9".
+
+Int Function ver3ToInteger(String sMajorVer, String sMinorVer, String sReleaseVer) Global
+	Int iMajorVer = sMajorVer as Int
+	Int iMinorVer = sMinorVer as Int
+	Int iReleaseVer = sReleaseVer as Int
+	Int iVersion = (iMajorVer * 1000) + (iMinorVer * 100) + iReleaseVer
+	Return iVersion as Int
 EndFunction
