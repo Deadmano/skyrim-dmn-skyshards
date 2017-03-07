@@ -26,6 +26,7 @@ to enhance Papyrus scripting.}
 ;===============
 
 Import Debug
+Import Utility
 
 ; debugNotification:
 ; ------------------
