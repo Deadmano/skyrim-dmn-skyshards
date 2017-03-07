@@ -39,6 +39,7 @@ Import Debug
 
 Function debugNotification(GlobalVariable gDebugVariable, String sDebugMessage) Global
 	If (gDebugVariable.GetValue() == 1)
+		Wait(0.1)
 		Notification(sDebugMessage)
 	EndIf
 EndFunction
