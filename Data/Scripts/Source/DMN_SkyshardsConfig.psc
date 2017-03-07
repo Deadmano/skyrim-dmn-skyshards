@@ -27,9 +27,6 @@ String DMN_sSkyshardsVersionRunning
 ; Update Related Variables and Properties
 ; =======================================
 
-; Introduced in v1.0.1.
-Message Property DMN_SkyshardsSkyshardActivationFPFOVBug Auto
-
 ;============================================================
 
 Event OnInit()
@@ -102,16 +99,7 @@ Function updateSkyshards()
 	; // BEGIN UPDATE FOR CURRENT SCRIPT VERSION
 	;-------------------------------------------
 	
-	; Begin v1.0.1 Updates
-	;=====================
 
-; Fix player controls that were stuck in 1st-person due to a bug in Skyshards v1.0.0.
-	If (DMN_iSkyshardsVersionInstalled < ver3ToInteger("1", "0", "1"))
-		EnablePlayerControls()
-		DMN_SkyshardsSkyshardActivationFPFOVBug.Show()
-	EndIf
-	
-	; End v1.0.1 Updates
 	;=====================
 
 	; // END UPDATE FOR CURRENT SCRIPT VERSION
