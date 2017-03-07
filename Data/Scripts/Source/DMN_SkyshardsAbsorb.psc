@@ -10,13 +10,10 @@ ScriptName DMN_SkyshardsAbsorb Extends ObjectReference
 Import DMN_DeadmaniacFunctions
 Import Game
 Import Debug
-Import Form
 Import Quest
 Import Utility
 
 DMN_SkyshardsQuest Property DMN_SQ Auto
-
-;DMN_SkyshardsTracker Property DMN_ST Auto
 
 Actor Property PlayerRef Auto
 {The player reference we will be checking for. Auto-Fill}
@@ -51,10 +48,7 @@ GlobalVariable Property DMN_SkyshardsDLC01CountActivated Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable. Auto-Fill.}
 
-;Form skyshardActivated
-;ReferenceAlias DMN_SkyshardTest01
-
-;FormList Property DMN_SkyshardsAbsorbedList Auto
+FormList Property DMN_SkyshardsAbsorbedList Auto
 
 Auto State Absorbing
 	Event OnActivate(ObjectReference WhoDaresTouchMe)
@@ -64,20 +58,11 @@ Auto State Absorbing
 			DMN_SkyshardsCountCurrent.Mod(1 as Int)
 			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
 			
-			;Activator test = Self.GetBaseObject() as Activator
-			;DMN_SkyshardsTracker.setSkyshardFound(test)
-			
-			;Notification("You activated: " + Self.GetActorOwner())
-			;skyshardActivated = GetBaseObject() as Activator
-			;skyshardActivated = self.GetBaseObject()
-			;DMN_SkyshardTest01 = self.GetReference().GetBaseObject()
-			;DMN_SkyshardsAbsorbedList.AddForm(DMN_SkyshardTest01)
-			;Notification("You activated: " + DMN_SkyshardsAbsorbedList.GetAt(0))
-			;Notification(DMN_SkyshardTest01)
-			;Notification(GetFormID())
+			DMN_SkyshardsAbsorbedList.AddForm(Self)
 			
 		; Update the global variable values for the tracking quest.
 			DMN_SQ.updateSkyshardsGlobals()
+			DMN_SQ.updateSkyshardsQuestProgress()
 			
 		; Check if the Skyshard activated is from Skyrim.
 			If (DMN_SkyshardsActivatedCounter == DMN_SkyshardsSkyrimCountActivated)
@@ -89,21 +74,20 @@ Auto State Absorbing
 					DMN_SQ.startSkyshardsSkyrim()
 					Wait(2)
 				EndIf
+				
+			; Update the quest objective displayed.
+				DMN_SQ.DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10)
 
 		; Check if the Skyshard activated is from DLC01.
 			ElseIf (DMN_SkyshardsActivatedCounter == DMN_SkyshardsDLC01CountActivated)
 
 			;Debugger.
 				debugNotification(DMN_SkyshardsDebug, "You activated a DLC01 Skyshard!")
-				;If (DMN_SkyshardsDebug.GetValue() == 1)
-				;	Notification("You activated a DLC01 Skyshard!")
-				;EndIf
 				
 			; Add DLC01 start quest here.
 					Wait(2)
 			EndIf
-			
-			
+
 		; Show the abosrb message once we've allocated the Skyshard counters.
 			DMN_SkyshardAbsorbedMessage.Show()
 
