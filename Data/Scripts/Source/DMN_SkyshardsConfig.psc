@@ -54,10 +54,7 @@ Function Maintenance()
 	If (DMN_iSkyshardsVersionInstalled < DMN_iSkyshardsVersionRunning)
 
 	; //Debug - Check if Skyshards reaches the update check.
-		If (DMN_SkyshardsDebug.GetValue() == 1)
-			Wait(0.1)
-			Notification("Skyshards DEBUG: Checkpoint - Update Check Reached.")
-		EndIf
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Check Reached.")
 	
 	; If it is then we need to run the update on it.
 		updateSkyshards()
@@ -71,12 +68,9 @@ Function Maintenance()
 	ElseIf (DMN_iSkyshardsVersionInstalled == DMN_iSkyshardsVersionRunning)
 	
 	; //Debug - Check if Skyshards reaches the versions match check.
-		If (DMN_SkyshardsDebug.GetValue() == 1)
-			Wait(0.1)
-			Notification("Skyshards DEBUG: Checkpoint - Versions Match Check Reached.")
-			Notification("Skyshard String: " + DMN_sSkyshardsVersionRunning)
-			Notification("Skyshard Integer: " + DMN_iSkyshardsVersionRunning)
-		EndIf
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Versions Match Check Reached.")
+		debugNotification(DMN_SkyshardsDebug, "Skyshard String: " + DMN_sSkyshardsVersionRunning)
+		debugNotification(DMN_SkyshardsDebug, "Skyshard Integer: " + DMN_iSkyshardsVersionRunning)
 
 ; No idea how the user got here, but good to grab just in case!
 	Else
@@ -94,10 +88,7 @@ EndFunction
 Function updateSkyshards()
 
 ; //Debug - Check if Skyshards reaches the update function.
-	If (DMN_SkyshardsDebug.GetValue() == 1)
-		Wait(0.1)
-		Notification("Skyshards DEBUG: Checkpoint - Update Function Reached.")
-	EndIf
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Function Reached.")
 
 	If (DMN_iSkyshardsVersionInstalled < ver3ToInteger("1", "0", "0"))
 		Wait(0.1)
@@ -134,9 +125,6 @@ Function updateSkyshards()
 	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
 	
 ; //Debug - Check if Skyshards passes the update function.
-	If (DMN_SkyshardsDebug.GetValue() == 1)
-		Wait(0.1)
-		Notification("Skyshards DEBUG: Checkpoint - Update Function Passed.")
-	EndIf
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Function Passed.")
 	
 EndFunction
