@@ -8,18 +8,21 @@ ScriptName DMN_SkyshardsConfig Extends Quest
 Import DMN_DeadmaniacFunctions
 Import Debug
 Import Game
-Import StringUtil
 Import Utility
 
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable.}
 
-; User's Installed Script Version.
-String Property DMN_SkyshardsVersionInstalled Auto 
+; User's Installed Script Version as an Integer.
+Int Property DMN_iSkyshardsVersionInstalled Auto 
+{Do not fill in manually, the script will do so.}
+; User's Installed Script Version as a string.
+String Property DMN_sSkyshardsVersionInstalled Auto 
 {Do not fill in manually, the script will do so.}
 
 ; Current Script Version Being Run.
-String DMN_SkyshardsVersionRunning
+Int DMN_iSkyshardsVersionRunning
+String DMN_sSkyshardsVersionRunning
 
 ; Update Related Variables and Properties
 ; =======================================
@@ -36,20 +39,19 @@ EndEvent
 Function Maintenance()
 
 ; The latest (current) version of Skyshards. Update this to the version number.
-	DMN_SkyshardsVersionRunning = "1.0.0" ; <--- CHANGE! Can't go over 9.9.9.
-	; -----------------------UPDATE!^^^ 
-	
+	parseSkyshardsVersion("1", "0", "0") ; <--- CHANGE! No more than: "infinite", "99", "9".
+; ---------------- UPDATE! ^^^^^^^^^^^
 	If (DMN_SkyshardsDebug.GetValue() == 1)
-		If DMN_SkyshardsVersionInstalled
+		If DMN_sSkyshardsVersionInstalled
 			Wait(0.1)
 			Notification("Skyshards DEBUG: An existing install of Skyshards was detected on this save!")
-			Notification("Skyshards DEBUG: This save is referencing version " + DMN_SkyshardsVersionInstalled + " of Skyshards.")
-			Notification("Skyshards DEBUG: You are using Skyshards' version " + DMN_SkyshardsVersionRunning + " configuration script.")
+			Notification("Skyshards DEBUG: This save is referencing version " + DMN_sSkyshardsVersionInstalled + " of Skyshards' configuration script.")
+			Notification("Skyshards DEBUG: You are running Skyshards' version " + DMN_sSkyshardsVersionRunning + " configuration script.")
 		EndIf
 	EndIf
 
 ; Check to see if the user's installed Skyshards version is less than this running version of Skyshards.
-	If (strVer3ToInt(DMN_SkyshardsVersionInstalled) < strVer3ToInt(DMN_SkyshardsVersionRunning))
+	If (DMN_iSkyshardsVersionInstalled < DMN_iSkyshardsVersionRunning)
 
 	; //Debug - Check if Skyshards reaches the update check.
 		If (DMN_SkyshardsDebug.GetValue() == 1)
@@ -61,20 +63,20 @@ Function Maintenance()
 		updateSkyshards()
 
 ; Check to see if the user is loading a save with an existing Skyshards install but is using older Skyshards scripts than those saved with.
-	ElseIf (strVer3ToInt(DMN_SkyshardsVersionInstalled) > strVer3ToInt(DMN_SkyshardsVersionRunning))
+	ElseIf (DMN_iSkyshardsVersionInstalled > DMN_iSkyshardsVersionRunning)
 		Wait(0.1)
 		MessageBox("Skyshards has detected that you are using one or more outdated scripts than those used when this save was created. This is just a warning and you may continue to play with unknown side-effects; though for best results it is advised that you update to the latest version.")
 
 ; Check to see if the user's installed Skyshards version matches this running version of Skyshards.
-	ElseIf (strVer3ToInt(DMN_SkyshardsVersionInstalled) == strVer3ToInt(DMN_SkyshardsVersionRunning))
+	ElseIf (DMN_iSkyshardsVersionInstalled == DMN_iSkyshardsVersionRunning)
 	
 	; //Debug - Check if Skyshards reaches the versions match check.
 		If (DMN_SkyshardsDebug.GetValue() == 1)
 			Wait(0.1)
 			Notification("Skyshards DEBUG: Checkpoint - Versions Match Check Reached.")
+			Notification("Skyshard String: " + DMN_sSkyshardsVersionRunning)
+			Notification("Skyshard Integer: " + DMN_iSkyshardsVersionRunning)
 		EndIf
-	
-; Code for if the versions match. Nothing needs to be done, for now.
 
 ; No idea how the user got here, but good to grab just in case!
 	Else
@@ -84,8 +86,10 @@ Function Maintenance()
 
 EndFunction
 
-; UPDATE FUNCTION
-;----------------
+Function parseSkyshardsVersion(String sMajorVer, String sMinorVer, String sReleaseVer)
+	DMN_iSkyshardsVersionRunning = ver3ToInteger(sMajorVer, sMinorVer, sReleaseVer)
+	DMN_sSkyshardsVersionRunning = ver3ToString(sMajorVer, sMinorVer, sReleaseVer)
+EndFunction
 
 Function updateSkyshards()
 
@@ -95,12 +99,12 @@ Function updateSkyshards()
 		Notification("Skyshards DEBUG: Checkpoint - Update Function Reached.")
 	EndIf
 
-	If (strVer3ToInt(DMN_SkyshardsVersionInstalled) < strVer3ToInt("1.0.0"))
+	If (DMN_iSkyshardsVersionInstalled < ver3ToInteger("1", "0", "0"))
 		Wait(0.1)
 		Notification("Skyshards: Installation and configuration in progress.")
 	Else
 		Wait(0.1)
-		Notification("Skyshards: Updating from version " + DMN_SkyshardsVersionInstalled + ".")
+		Notification("Skyshards: Updating from version " + DMN_sSkyshardsVersionInstalled + ".")
 	EndIf
 
 	
@@ -111,10 +115,9 @@ Function updateSkyshards()
 	;=====================
 
 ; Fix player controls that were stuck in 1st-person due to a bug in Skyshards v1.0.0.
-	;If DMN_SkyshardsVersionInstalled < "1.0.1"
-	If (strVer3ToInt(DMN_SkyshardsVersionInstalled) < strVer3ToInt("1.0.1"))
-	EnablePlayerControls()
-	DMN_SkyshardsSkyshardActivationFPFOVBug.Show()
+	If (DMN_iSkyshardsVersionInstalled < ver3ToInteger("1", "0", "1"))
+		EnablePlayerControls()
+		DMN_SkyshardsSkyshardActivationFPFOVBug.Show()
 	EndIf
 	
 	; End v1.0.1 Updates
@@ -124,9 +127,11 @@ Function updateSkyshards()
 	;-------------------------------------------
 	
 ; Updates the user's installed Skyshards version to this running version of Skyshards.
-	DMN_SkyshardsVersionInstalled = DMN_SkyshardsVersionRunning 
+	DMN_iSkyshardsVersionInstalled = DMN_iSkyshardsVersionRunning ; Integer.
+	DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
+	
 	Wait(5.0)
-	Notification("Skyshards: You are now running version " + DMN_SkyshardsVersionInstalled + ". Enjoy!")
+	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
 	
 ; //Debug - Check if Skyshards passes the update function.
 	If (DMN_SkyshardsDebug.GetValue() == 1)
