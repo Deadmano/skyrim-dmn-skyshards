@@ -5,13 +5,11 @@ Temporary placeholder until the quest system is implemented.
 
 Import Game
 Import Debug
-Import Quest
-Import Utility
 
 FormList Property DMN_SkyshardsAbsorbedList Auto
 
 ; TO DO: Add option for uninstallation to remove things
-; like FormLists!
+; like FormLists when quest system comes out!
 
 Form[] skyshardsEastmarch
 Form[] skyshardsFalkreath

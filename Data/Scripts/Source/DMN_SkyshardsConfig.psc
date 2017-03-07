@@ -27,7 +27,7 @@ String DMN_sSkyshardsVersionRunning
 ; Update Related Variables and Properties
 ; =======================================
 
-;============================================================
+;========================================
 
 Event OnInit()
     Maintenance() ; Function to handle script maintenance.
@@ -99,8 +99,6 @@ Function updateSkyshards()
 	; // BEGIN UPDATE FOR CURRENT SCRIPT VERSION
 	;-------------------------------------------
 	
-
-	;=====================
 
 	; // END UPDATE FOR CURRENT SCRIPT VERSION
 	;-------------------------------------------

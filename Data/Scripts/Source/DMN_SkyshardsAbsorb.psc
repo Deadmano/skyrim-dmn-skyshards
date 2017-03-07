@@ -10,7 +10,6 @@ ScriptName DMN_SkyshardsAbsorb Extends ObjectReference
 Import DMN_DeadmaniacFunctions
 Import Game
 Import Debug
-Import Quest
 Import Utility
 
 DMN_SkyshardsQuest Property DMN_SQ Auto
@@ -68,7 +67,7 @@ Auto State Absorbing
 			If (DMN_SkyshardsActivatedCounter == DMN_SkyshardsSkyrimCountActivated)
 
 			;Debugger.
-				debugNotification(DMN_SkyshardsDebug, "You activated a Skyrim Skyshard!")
+				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a Skyrim Skyshard!")
 			
 				If (!DMN_SQ.DMN_SkyshardsSkyrim.IsRunning())
 					DMN_SQ.startSkyshardsSkyrim()
@@ -82,7 +81,7 @@ Auto State Absorbing
 			ElseIf (DMN_SkyshardsActivatedCounter == DMN_SkyshardsDLC01CountActivated)
 
 			;Debugger.
-				debugNotification(DMN_SkyshardsDebug, "You activated a DLC01 Skyshard!")
+				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a DLC01 Skyshard!")
 				
 			; Add DLC01 start quest here.
 					Wait(2)
