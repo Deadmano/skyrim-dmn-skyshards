@@ -68,16 +68,12 @@ Auto State Absorbing
 
 			;Debugger.
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a Skyrim Skyshard!")
-			
-				If (!DMN_SQ.DMN_SkyshardsSkyrim.IsRunning())
-					DMN_SQ.startSkyshardsSkyrim()
-					Wait(2)
-				EndIf
-				
-			; Update the quest objective displayed.
-				DMN_SQ.DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10)
 
-		; Check if the Skyshard activated is from DLC01.
+			; Check if the Skyshards in Skyrim quest is running, and if it is not then start it.
+				DMN_SQ.startSkyshardsSkyrim()
+				Wait(2)
+
+		; Check if the Skyshard activated is from DLC01 (Dawnguard).
 			ElseIf (DMN_SkyshardsActivatedCounter == DMN_SkyshardsDLC01CountActivated)
 
 			;Debugger.

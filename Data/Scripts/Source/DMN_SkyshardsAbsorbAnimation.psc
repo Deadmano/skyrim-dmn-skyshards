@@ -12,7 +12,6 @@ VisualEffect Property DragonAbsorbManEffect Auto
 {Use DLC2MiraakAbsorbManE.}
 
 Event OnActivate(ObjectReference AbsorbActor)
-
 	If AbsorbActor == GetPlayer()
 	; Adds the dragon soul absorption effect to the player.
 		DragonAbsorbManEffect.Play(AbsorbActor)
@@ -41,5 +40,4 @@ Event OnActivate(ObjectReference AbsorbActor)
 		EnablePlayerControls()
 		Notification("I feel the power of the Skyshard coursing through me as I absorb it!")
 	EndIf
-
-EndEvent 
+EndEvent

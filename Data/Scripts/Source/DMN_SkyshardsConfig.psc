@@ -34,7 +34,6 @@ Event OnInit()
 EndEvent
  
 Function Maintenance()
-
 ; The latest (current) version of Skyshards. Update this to the version number.
 	parseSkyshardsVersion("1", "0", "0") ; <--- CHANGE! No more than: "infinite", "99", "9".
 ; ---------------- UPDATE! ^^^^^^^^^^^
@@ -74,7 +73,6 @@ Function Maintenance()
 		Wait(0.1)
 		MessageBox("WARNING: The version of Skyshards cannot be detected! Please inform Deadmano.")
 	EndIf
-
 EndFunction
 
 Function parseSkyshardsVersion(String sMajorVer, String sMinorVer, String sReleaseVer)
@@ -83,7 +81,6 @@ Function parseSkyshardsVersion(String sMajorVer, String sMinorVer, String sRelea
 EndFunction
 
 Function updateSkyshards()
-
 ; //Debug - Check if Skyshards reaches the update function.
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Function Reached.")
 
@@ -112,5 +109,4 @@ Function updateSkyshards()
 	
 ; //Debug - Check if Skyshards passes the update function.
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Function Passed.")
-	
 EndFunction

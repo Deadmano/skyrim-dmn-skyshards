@@ -37,7 +37,6 @@ GlobalVariable Property DMN_SkyshardsDebug Auto
 ReferenceAlias Property DMN_SkyshardTest01 Auto
 
 Function updateSkyshardsGlobals()
-
 ; Main Quest - Skyshards
 	skyshardsGlobalUpdater(DMN_Skyshards, DMN_SkyshardsCountCurrent)
 	skyshardsGlobalUpdater(DMN_Skyshards, DMN_SkyshardsCountCap)
@@ -49,20 +48,16 @@ Function updateSkyshardsGlobals()
 ; Side Quest - Skyshards: Skyrim
 	skyshardsGlobalUpdater(DMN_SkyshardsSkyrim, DMN_SkyshardsSkyrimCountActivated)
 	skyshardsGlobalUpdater(DMN_SkyshardsSkyrim, DMN_SkyshardsSkyrimCountTotal)
-
 EndFunction
 
 Function skyshardsGlobalUpdater(Quest questName, GlobalVariable globalName)
-
 	questName.UpdateCurrentInstanceGlobal(globalName)
-
 EndFunction
 
 Function startSkyshardsSkyrim()
 	If (!DMN_SkyshardsSkyrim.IsRunning())
-	
 	;Debugger.
-		debugNotification(DMN_SkyshardsDebug, "The main quest is not running! Starting it now.")
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The Skyshards in Skyrim quest is not running! Starting it now.")
 		DMN_SkyshardsSkyrim.Start()
 		DMN_SkyshardsSkyrim.SetStage(10)
 		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10)
@@ -74,7 +69,7 @@ Function updateSkyshardsQuestProgress()
 ;Check progress of Skyshards in Skyrim side quest.
 	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int)
 	;Debugger.
-		debugNotification(DMN_SkyshardsDebug, "You found all the Skyshards in Skyrim! Marking quest as complete now.")
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
 	;Complete the Skyshards in Skyrim side quest.
 		DMN_SkyshardsSkyrim.SetObjectiveCompleted(10)
 		DMN_SkyshardsSkyrim.CompleteQuest()
@@ -83,5 +78,4 @@ Function updateSkyshardsQuestProgress()
 	If (DMN_SkyshardsSkyrim.GetCurrentStageID() == 10)
 		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, true, true)
 	EndIf
-
 EndFunction

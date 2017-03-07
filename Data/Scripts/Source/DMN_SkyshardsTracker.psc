@@ -26,7 +26,6 @@ Event OnRead()
 EndEvent
 
 Function isSkyshardActivated(FormList Skyshards)
-
 	skyshardsEastmarch = new Form[2]
 	skyshardsEastmarch[0] = GetFormFromFile(0x01A7E4, "Skyshards.esp") as Form ; Eastmarch 01
 	skyshardsEastmarch[1] = GetFormFromFile(0x01A7E7, "Skyshards.esp") as Form ; Eastmarch 02
@@ -95,11 +94,9 @@ Function isSkyshardActivated(FormList Skyshards)
 	findSkyshard(skyshardsWhiterun[3], "Skyshard: Whiterun 04!")
 	
 	findSkyshard(skyshardsWinterhold[0], "Skyshard: Winterhold 01!")
-
 EndFunction
 
 Function findSkyshard(Form skyshard, String foundMessage)
-
 	Int skyshardIndex = DMN_SkyshardsAbsorbedList.GetSize()
 	While skyshardIndex
 		skyshardIndex -= 1
@@ -109,5 +106,4 @@ Function findSkyshard(Form skyshard, String foundMessage)
 			Notification(foundMessage)
 		EndIf
 	EndWhile
-
 EndFunction
