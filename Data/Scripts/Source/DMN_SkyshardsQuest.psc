@@ -25,16 +25,14 @@ GlobalVariable Property DMN_SkyshardsCountActivated Auto
 GlobalVariable Property DMN_SkyshardsCountTotal Auto
 {The amount of Skyshards that exist in total throughout Skyrim and other DLCs/Mods. Auto-Fill.}
 
+GlobalVariable Property DMN_SkyshardsDebug Auto
+{Set to the debug global variable. Auto-Fill.}
+
 Quest Property DMN_Skyshards Auto
 {The quest that handles all Skyshards and tracks them. Auto-Fill.}
 
 Quest Property DMN_SkyshardsSkyrim Auto
-{The quest that handles the Skyshards in Skrim. Auto-Fill.}
-
-GlobalVariable Property DMN_SkyshardsDebug Auto
-{Set to the debug global variable. Auto-Fill.}
-
-ReferenceAlias Property DMN_SkyshardTest01 Auto
+{The quest that handles the Skyshards in Skyrim. Auto-Fill.}
 
 Function updateSkyshardsGlobals()
 ; Main Quest - Skyshards
@@ -59,8 +57,9 @@ Function startSkyshardsSkyrim()
 	;Debugger.
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The Skyshards in Skyrim quest is not running! Starting it now.")
 		DMN_SkyshardsSkyrim.Start()
+		updateSkyshardsGlobals()
 		DMN_SkyshardsSkyrim.SetStage(10)
-		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10)
+		updateSkyshardsQuestProgress()
 	EndIf
 EndFunction
 

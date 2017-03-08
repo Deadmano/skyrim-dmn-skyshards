@@ -17,10 +17,6 @@ DMN_SkyshardsQuest Property DMN_SQ Auto
 Actor Property PlayerRef Auto
 {The player reference we will be checking for. Auto-Fill}
 
-Static Property DMN_SkyshardActivated Auto
-{Static version of the Skyshard, switched out when the player 
-activates and absorbs a Skyshard. Auto-Fill.}
-
 GlobalVariable Property DMN_SkyshardsActivatedCounter Auto
 {Set this to the ACTIVATED global variable to which DLC/Mod this Skyshard belongs to.
 So DMN_SkyshardsSkyrimCountActivated will increment the Skyrim Skyshard counter.}
@@ -48,6 +44,11 @@ GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable. Auto-Fill.}
 
 FormList Property DMN_SkyshardsAbsorbedList Auto
+{Stores all absorbed Skyshards into this FormList. Auto-Fill.}
+
+Static Property DMN_SkyshardActivated Auto
+{Static version of the Skyshard, switched out when the player 
+activates and absorbs a Skyshard. Auto-Fill.}
 
 Auto State Absorbing
 	Event OnActivate(ObjectReference WhoDaresTouchMe)
@@ -65,22 +66,18 @@ Auto State Absorbing
 			
 		; Check if the Skyshard activated is from Skyrim.
 			If (DMN_SkyshardsActivatedCounter == DMN_SkyshardsSkyrimCountActivated)
-
 			;Debugger.
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a Skyrim Skyshard!")
 
 			; Check if the Skyshards in Skyrim quest is running, and if it is not then start it.
 				DMN_SQ.startSkyshardsSkyrim()
-				Wait(2)
 
 		; Check if the Skyshard activated is from DLC01 (Dawnguard).
 			ElseIf (DMN_SkyshardsActivatedCounter == DMN_SkyshardsDLC01CountActivated)
-
 			;Debugger.
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a DLC01 Skyshard!")
 				
 			; Add DLC01 start quest here.
-					Wait(2)
 			EndIf
 
 		; Show the abosrb message once we've allocated the Skyshard counters.
