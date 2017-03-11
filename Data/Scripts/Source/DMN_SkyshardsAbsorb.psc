@@ -61,6 +61,9 @@ GlobalVariable Property DMN_SkyshardsDebug Auto
 FormList Property DMN_SkyshardsAbsorbedList Auto
 {Stores all absorbed Skyshards into this FormList. Auto-Fill.}
 
+FormList Property DMN_SkyshardsAbsorbedStaticList Auto
+{Stores all absorbed Skyshards into this FormList. Auto-Fill.}
+
 Static Property DMN_SkyshardActivated Auto
 {Static version of the Skyshard, switched out when the player 
 activates and absorbs a Skyshard. Auto-Fill.}
@@ -73,7 +76,9 @@ Auto State Absorbing
 			DMN_SkyshardsCountCurrent.Mod(1 as Int)
 			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
 			
-			DMN_SkyshardsAbsorbedList.AddForm(Self)
+			If DMN_SkyshardsAbsorbedList
+				DMN_SkyshardsAbsorbedList.AddForm(Self)
+			EndIf
 			
 		; Update the global variable values for the tracking quest.
 			DMN_SQ.updateSkyshardsGlobals()
@@ -106,6 +111,9 @@ Auto State Absorbing
 
 			ObjectReference disabledSkyshardStatic = PlaceAtMe(DMN_SkyshardActivated, 1, True, True)
 			disabledSkyshardStatic.EnableNoWait() ; Used to enable the Static Skyshard WITHOUT a fade-in.
+			If DMN_SkyshardsAbsorbedStaticList
+				DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Static Skyshard to a FormList for future use.
+			EndIf
 			Wait(1)
 			DisableNoWait() ; Disable the Skyshard Activator WITHOUT a fade-out.
 			GetLinkedRef().Disable() ; Disable the Skyshard Beacon with a fade-out.
