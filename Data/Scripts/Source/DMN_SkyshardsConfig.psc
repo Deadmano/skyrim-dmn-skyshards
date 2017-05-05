@@ -119,7 +119,7 @@ Function Maintenance()
 
 ; Else check to see if the user's installed Skyshards version is less than this running version of Skyshards.
 ; Or if any Skyshards were absorbed, to detect a previous install from the legacy v1.0.0 version.
-	ElseIf (DMN_iSkyshardsVersionInstalled.GetValue() as Int < DMN_iSkyshardsVersionRunning || DMN_SkyshardsCountCurrent.GetValue() as Int > 0)
+	ElseIf (DMN_iSkyshardsVersionInstalled.GetValue() as Int < DMN_iSkyshardsVersionRunning)
 
 	; //Debug - Check if Skyshards reaches the update check.
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Check Reached.")
@@ -156,20 +156,28 @@ Function installSkyshards()
 ; //Debug - Check if Skyshards reaches the install function.
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Install Function Reached.")
 	
-	Wait(0.1)
-	Notification("Skyshards: Installation and configuration in progress.")
-	
-; Set the default configuration settings.
-	configurationDefaults()
-	
-; Updates the user's installed Skyshards version to this running version of Skyshards.
-	DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.
-	DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
-	Wait(0.1)
-	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
+; Check if previous Skyshards have been found from the legacy v1.0.0 version of Skyshards.
+	If (DMN_SkyshardsCountCurrent.GetValue() as Int > 0)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Unknown Previous Version Update.")
+	; If any are found, we need to update this save's version of Skyshards.
+		updateSkyshards()
+; Otherwise treat this save as a clean install.
+	Else
+		Wait(0.1)
+		Notification("Skyshards: Installation and configuration in progress.")
+		
+	; Set the default configuration settings.
+		configurationDefaults()
+		
+	; Updates the user's installed Skyshards version to this running version of Skyshards.
+		DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.
+		DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
+		Wait(0.1)
+		Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
 
-; //Debug - Check if Skyshards passes the install function.
-	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Install Function Passed.")
+	; //Debug - Check if Skyshards passes the install function.
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Install Function Passed.")
+	EndIf
 EndFunction
 
 Function updateSkyshards()
