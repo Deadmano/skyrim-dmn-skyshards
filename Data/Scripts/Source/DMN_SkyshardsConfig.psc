@@ -109,7 +109,7 @@ Function Maintenance()
 	EndIf
 
 ; Check to see if this is a new install.
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "0", "0") && DMN_SkyshardsCountCurrent.GetValue() as Int == 0)
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "0", "0"))
 	
 	; //Debug - Check if Skyshards reaches the new install check.
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - New Install Check Reached.")
