@@ -17,32 +17,72 @@ ScriptName DMN_SkyshardsConfig Extends Quest
 
 {Skyshards - Configuration Script by Deadmano.}
 ;==============================================
-; Version: 1.0.0
+; Version: 1.1.0
 ;===============
 
 Import DMN_DeadmaniacFunctions
+Import DMN_SkyshardsFunctions
 Import Debug
 Import Game
 Import Utility
 
+DMN_SkyshardsQuest Property DMN_SQN Auto
+DMN_SkyshardsQuestData Property DMN_SQD Auto
+
+Book Property DMN_SkyshardsConfigurator Auto
+{Stores the temporary mod configurator. Auto-Fill.}
+
+FormList Property DMN_SkyshardsMapMarkersList Auto
+{Stores all the Skyshard map markers.}
+
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable.}
 
+; --
+
 ; User's Installed Script Version as an Integer.
-Int Property DMN_iSkyshardsVersionInstalled Auto 
-{Do not fill in manually, the script will do so.}
+GlobalVariable Property DMN_iSkyshardsVersionInstalled Auto 
+{Stores the users Skyshards version. Auto-Fill.}
 ; User's Installed Script Version as a string.
-String Property DMN_sSkyshardsVersionInstalled Auto 
-{Do not fill in manually, the script will do so.}
+String DMN_sSkyshardsVersionInstalled 
 
 ; Current Script Version Being Run.
 Int DMN_iSkyshardsVersionRunning
 String DMN_sSkyshardsVersionRunning
 
-; Update Related Variables and Properties
-; =======================================
+; BEGIN Update Related Variables and Properties
+;==============================================
+;
+; BEGIN v1.1.0
+;-------------
 
-;========================================
+Alias Property skyshardStatic Auto
+{The alias on the Helper quest that fills with all found Skyshard statics. Auto-Fill.}
+
+FormList Property DMN_SkyshardsAbsorbedList Auto
+{Stores all absorbed Skyshards into this FormList. Auto-Fill.}
+
+FormList Property DMN_SkyshardsAbsorbedStaticList Auto
+{Stores all dynamically placed Skyshard Statics into this FormList. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsCountCurrent Auto
+{The current amount of Skyshards the player has activated throughout Skyrim and
+other DLCs/Mods which resets once it reaches DMN_SkyshardsCountCap. Auto-Fill.}
+
+Message Property DMN_SkyshardsUpdateAnnouncement_v1_1_0 Auto
+{The message that is shown to the player for the update to version 1.1.0. Auto-Fill.}
+
+Quest Property DMN_SkyshardsHelper Auto
+{The Quest that also handles the once-off removal of dynamically placed Skyshard Statics. Auto-Fill.}
+
+Static Property DMN_SkyshardActivated Auto
+{Static version of the Skyshard, switched out when the player activates and absorbs a Skyshard. Auto-Fill.}
+
+; END v1.1.0
+;-------------
+
+; END Update Related Variables and Properties
+;==============================================
 
 Event OnInit()
     Maintenance() ; Function to handle script maintenance.
@@ -50,38 +90,55 @@ EndEvent
  
 Function Maintenance()
 ; The latest (current) version of Skyshards. Update this to the version number.
-	parseSkyshardsVersion("1", "0", "0") ; <--- CHANGE! No more than: "infinite", "99", "9".
+	parseSkyshardsVersion("1", "1", "0") ; <--- CHANGE! No more than: "9e9", "99", "9".
 ; ---------------- UPDATE! ^^^^^^^^^^^
 	If (DMN_SkyshardsDebug.GetValue() == 1)
-		If DMN_sSkyshardsVersionInstalled
+		If (DMN_sSkyshardsVersionInstalled)
 			Wait(0.1)
 			Notification("Skyshards DEBUG: An existing install of Skyshards was detected on this save!")
-			Notification("Skyshards DEBUG: This save is referencing version " + DMN_sSkyshardsVersionInstalled + " of Skyshards' configuration script.")
+			If (DMN_sSkyshardsVersionInstalled == "")
+				Wait(0.1)
+				Notification("Skyshards DEBUG: This save is referencing an unknown version of Skyshards' configuration script.")
+			Else
+				Wait(0.1)
+				Notification("Skyshards DEBUG: This save is referencing version " + DMN_sSkyshardsVersionInstalled + " of Skyshards' configuration script.")
+			EndIf
+			Wait(0.1)
 			Notification("Skyshards DEBUG: You are running Skyshards' version " + DMN_sSkyshardsVersionRunning + " configuration script.")
 		EndIf
 	EndIf
 
-; Check to see if the user's installed Skyshards version is less than this running version of Skyshards.
-	If (DMN_iSkyshardsVersionInstalled < DMN_iSkyshardsVersionRunning)
+; Check to see if this is a new install.
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "0", "0") && DMN_SkyshardsCountCurrent.GetValue() as Int == 0)
+	
+	; //Debug - Check if Skyshards reaches the new install check.
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - New Install Check Reached.")
+	
+	; If it is, install Skyshards for the first time to this save.
+		installSkyshards()
+
+; Else check to see if the user's installed Skyshards version is less than this running version of Skyshards.
+; Or if any Skyshards were absorbed, to detect a previous install from the legacy v1.0.0 version.
+	ElseIf (DMN_iSkyshardsVersionInstalled.GetValue() as Int < DMN_iSkyshardsVersionRunning || DMN_SkyshardsCountCurrent.GetValue() as Int > 0)
 
 	; //Debug - Check if Skyshards reaches the update check.
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Check Reached.")
 	
-	; If it is then we need to run the update on it.
+	; If it is then we need to run the update on this save.
 		updateSkyshards()
 
 ; Check to see if the user is loading a save with an existing Skyshards install but is using older Skyshards scripts than those saved with.
-	ElseIf (DMN_iSkyshardsVersionInstalled > DMN_iSkyshardsVersionRunning)
+	ElseIf (DMN_iSkyshardsVersionInstalled.GetValue() as Int > DMN_iSkyshardsVersionRunning)
 		Wait(0.1)
 		MessageBox("Skyshards has detected that you are using one or more outdated scripts than those used when this save was created. This is just a warning and you may continue to play with unknown side-effects; though for best results it is advised that you update to the latest version.")
 
 ; Check to see if the user's installed Skyshards version matches this running version of Skyshards.
-	ElseIf (DMN_iSkyshardsVersionInstalled == DMN_iSkyshardsVersionRunning)
+	ElseIf (DMN_iSkyshardsVersionInstalled.GetValue() as Int == DMN_iSkyshardsVersionRunning)
 	
 	; //Debug - Check if Skyshards reaches the versions match check.
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Versions Match Check Reached.")
-		debugNotification(DMN_SkyshardsDebug, "Skyshard String: " + DMN_sSkyshardsVersionRunning)
-		debugNotification(DMN_SkyshardsDebug, "Skyshard Integer: " + DMN_iSkyshardsVersionRunning)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: String Value: " + DMN_sSkyshardsVersionRunning)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Integer Value: " + DMN_iSkyshardsVersionRunning)
 
 ; No idea how the user got here, but good to grab just in case!
 	Else
@@ -95,33 +152,93 @@ Function parseSkyshardsVersion(String sMajorVer, String sMinorVer, String sRelea
 	DMN_sSkyshardsVersionRunning = ver3ToString(sMajorVer, sMinorVer, sReleaseVer)
 EndFunction
 
+Function installSkyshards()
+; //Debug - Check if Skyshards reaches the install function.
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Install Function Reached.")
+	
+	Wait(0.1)
+	Notification("Skyshards: Installation and configuration in progress.")
+	
+; Set the default configuration settings.
+	configurationDefaults()
+	
+; Updates the user's installed Skyshards version to this running version of Skyshards.
+	DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.
+	DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
+	Wait(0.1)
+	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
+
+; //Debug - Check if Skyshards passes the install function.
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Install Function Passed.")
+EndFunction
+
 Function updateSkyshards()
 ; //Debug - Check if Skyshards reaches the update function.
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Function Reached.")
 
-	If (DMN_iSkyshardsVersionInstalled < ver3ToInteger("1", "0", "0"))
+	If (DMN_sSkyshardsVersionInstalled == "")
 		Wait(0.1)
-		Notification("Skyshards: Installation and configuration in progress.")
+		Notification("Skyshards: Updating from a previous unknown version.")
 	Else
 		Wait(0.1)
 		Notification("Skyshards: Updating from version " + DMN_sSkyshardsVersionInstalled + ".")
 	EndIf
 
-	
 	; // BEGIN UPDATE FOR CURRENT SCRIPT VERSION
 	;-------------------------------------------
 	
+; BEGIN v1.0.0 FIXES/PATCHES
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "1", "0"))
+	; Removal of all static (activated) Skyshards that were dynamically added and couldn't be directly referenced.
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Removing dynamically placed Skyshard statics now...")
+		removeDynamicSkyshardStatics(DMN_SkyshardsHelper, skyshardStatic)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: All dynamically placed Skyshard statics have been removed!")
+	; Adding Skyshard Statics dynamically at the location of the Skyshard Activators.
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Placing Skyshard statics at updated absorbed Skyshard locations now...")
+		placeSkyshardStatics(DMN_SkyshardsAbsorbedList, DMN_SkyshardActivated, DMN_SkyshardsAbsorbedStaticList)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: All Skyshard statics have been placed!")
+	; Start the main quest up to start tracking existing Skyshards and future ones as well.
+		DMN_SQN.startMainQuest("Skyrim")
+	; Update the quest progress of all previously found Skyshards.
+		DMN_SQD.updateQuest()
+	EndIf
+; END v1.0.0 FIXES/PATCHES
+
+	; // BEGIN VERSION SPECIFIC ANNOUNCEMENT MESSAGES
+	;------------------------------------------------
+
+; v1.1.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "1", "0"))
+		DMN_SkyshardsUpdateAnnouncement_v1_1_0.Show()
+	EndIf
+
+	; // END VERSION SPECIFIC ANNOUNCEMENT MESSAGES
+	;------------------------------------------------
 
 	; // END UPDATE FOR CURRENT SCRIPT VERSION
 	;-------------------------------------------
 	
+; Set the default configuration settings.
+	configurationDefaults()
+
 ; Updates the user's installed Skyshards version to this running version of Skyshards.
-	DMN_iSkyshardsVersionInstalled = DMN_iSkyshardsVersionRunning ; Integer.
+	DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.
 	DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
-	
-	Wait(5.0)
+	Wait(0.1)
 	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
-	
+
 ; //Debug - Check if Skyshards passes the update function.
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Function Passed.")
+EndFunction
+
+Function configurationDefaults()
+; Add (or update) the mod configurator to the player inventory silently.
+	giveConfigurator(DMN_SkyshardsConfigurator)
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Gave the player the latest Skyshards Configurator!")
+	
+; Disable the Skyshard map markers.
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Disabling Skyshard map markers...")
+	showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Skyshard map markers have been disabled!")
 EndFunction
