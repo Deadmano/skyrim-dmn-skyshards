@@ -22,12 +22,13 @@ ScriptName DMN_SkyshardsAbsorb Extends ObjectReference
 *Skyshard activator & beacon effect disabling.
 }
 
-Import DMN_DeadmaniacFunctions
-Import Game
 Import Debug
+Import Game
 Import Utility
+Import DMN_DeadmaniacFunctions
 
-DMN_SkyshardsQuest Property DMN_SQ Auto
+DMN_SkyshardsQuest Property DMN_SQN Auto
+DMN_SkyshardsQuestData Property DMN_SQD Auto
 
 Actor Property PlayerRef Auto
 {The player reference we will be checking for. Auto-Fill}
@@ -62,11 +63,13 @@ FormList Property DMN_SkyshardsAbsorbedList Auto
 {Stores all absorbed Skyshards into this FormList. Auto-Fill.}
 
 FormList Property DMN_SkyshardsAbsorbedStaticList Auto
-{Stores all absorbed Skyshards into this FormList. Auto-Fill.}
+{Stores all dynamically placed Skyshard Statics into this FormList. Auto-Fill.}
+
+FormList Property DMN_SkyshardsBeaconList Auto
+{Stores all user-disabled Skyshard Beacons from the MCM. Auto-Fill.}
 
 Static Property DMN_SkyshardActivated Auto
-{Static version of the Skyshard, switched out when the player 
-activates and absorbs a Skyshard. Auto-Fill.}
+{Static version of the Skyshard, switched out when the player activates and absorbs a Skyshard. Auto-Fill.}
 
 Auto State Absorbing
 	Event OnActivate(ObjectReference WhoDaresTouchMe)
@@ -76,47 +79,51 @@ Auto State Absorbing
 			DMN_SkyshardsCountCurrent.Mod(1 as Int)
 			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
 			
-			If DMN_SkyshardsAbsorbedList
-				DMN_SkyshardsAbsorbedList.AddForm(Self)
-			EndIf
-			
-		; Update the global variable values for the tracking quest.
-			DMN_SQ.updateSkyshardsGlobals()
-			DMN_SQ.updateSkyshardsQuestProgress()
+		; Add this Skyshard to a FormList so we know it was activated.
+			DMN_SkyshardsAbsorbedList.AddForm(Self)
 			
 		; Check if the Skyshard activated is from Skyrim.
 			If (DMN_SkyshardsActivatedCounter == DMN_SkyshardsSkyrimCountActivated)
-			;Debugger.
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a Skyrim Skyshard!")
 
 			; Check if the Skyshards in Skyrim quest is running, and if it is not then start it.
-				DMN_SQ.startSkyshardsSkyrim()
+				DMN_SQN.startMainQuest("Skyrim")
 
 		; Check if the Skyshard activated is from DLC01 (Dawnguard).
 			ElseIf (DMN_SkyshardsActivatedCounter == DMN_SkyshardsDLC01CountActivated)
-			;Debugger.
-				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a DLC01 Skyshard!")
+				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a Dawnguard Skyshard!")
 				
 			; Add DLC01 start quest here.
+				; DMN_SQN.startMainQuest("Dawnguard")
 			EndIf
+			
+		; Update the global variable values for the tracking quests and check for main quest progression.
+			DMN_SQN.updateGlobals()
+			DMN_SQN.updateMainQuests()
 
 		; Show the abosrb message once we've allocated the Skyshard counters.
 			DMN_SkyshardAbsorbedMessage.Show()
 
-		; Check if we reach the specified Skyshards cap to gain perk points.
+		; Check if we reach the specified Skyshards cap to give perk points.
 			If (DMN_SkyshardsCountCurrent.GetValue() as Int == DMN_SkyshardsCountCap.GetValue() as Int)
 				AddPerkPoints(DMN_SkyshardsPerkPoints.GetValue() as Int)
 				DMN_SkyshardsCountCurrent.SetValue(0 as Int)
 			EndIf
 
 			ObjectReference disabledSkyshardStatic = PlaceAtMe(DMN_SkyshardActivated, 1, True, True)
-			disabledSkyshardStatic.EnableNoWait() ; Used to enable the Static Skyshard WITHOUT a fade-in.
-			If DMN_SkyshardsAbsorbedStaticList
-				DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Static Skyshard to a FormList for future use.
-			EndIf
+			disabledSkyshardStatic.EnableNoWait() ; Used to enable the Skyshard Static WITHOUT a fade-in.
+			DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Skyshard Static to a FormList for future use.
 			Wait(1)
 			DisableNoWait() ; Disable the Skyshard Activator WITHOUT a fade-out.
-			GetLinkedRef().Disable() ; Disable the Skyshard Beacon with a fade-out.
+		; Remove the Skyshard Beacon from the beacon list managed by the MCM, if it exists.
+			If DMN_SkyshardsBeaconList.HasForm(GetLinkedRef())
+				DMN_SkyshardsBeaconList.RemoveAddedForm(GetLinkedRef())
+				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Beacon detected and removed from the MCM beacon FormList.")
+			EndIf
+			Wait(0.1)
+			GetLinkedRef().Disable(True) ; Disable the Skyshard Beacon with a fade-out.
+		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
+			DMN_SQD.updateQuest()
 		EndIf
 	EndEvent
 EndState
