@@ -22,6 +22,8 @@ Import Debug
 Import Utility
 Import DMN_SkyshardsFunctions
 
+DMN_SkyshardsQuestData Property DMN_SQD Auto
+
 Alias Property skyshardBeaconEnabled Auto
 Alias Property skyshardBeaconDisabled Auto
 
@@ -29,9 +31,14 @@ FormList Property DMN_SkyshardsMapMarkersList Auto
 FormList Property DMN_SkyshardsBeaconList Auto
 FormList Property DMN_SkyshardsAbsorbedList Auto
 
+GlobalVariable Property DMN_SkyshardsDebug Auto
+GlobalVariable Property DMN_SkyshardsQuestSystem Auto
+
 Message Property DMN_SkyshardsConfigMenu Auto
-Message Property DMN_SkyshardsConfigMenuMapMarkers Auto
 Message Property DMN_SkyshardsConfigMenuBeacons Auto
+Message Property DMN_SkyshardsConfigMenuMapMarkers Auto
+Message Property DMN_SkyshardsConfigMenuMisc Auto
+Message Property DMN_SkyshardsConfigMenuQuestSystem Auto
 
 Quest Property DMN_SkyshardsHelper Auto
 
@@ -43,8 +50,12 @@ EndEvent
 Function configureMod()
 ; Stop further config menu activation until we finish processing this request.
 	GotoState("configuring")
-	Int choice = DMN_SkyshardsConfigMenu.Show() ; Main Config Menu.
-	If (choice == 0) ; Map Markers.
+; MAIN CONFIG MENU
+	Int choice = DMN_SkyshardsConfigMenu.Show()
+	;------------
+	; MAP MARKERS
+	;============
+	If (choice == 0)
 		Int choice00 = DMN_SkyshardsConfigMenuMapMarkers.Show()
 		If (choice00 == 0)
 		; Enable Map Markers.
@@ -65,7 +76,10 @@ Function configureMod()
 			GoToState("postConfig")
 			configureMod()
 		EndIf
-	ElseIf (choice == 1) ; Skyshard Beacons.
+	;-----------------
+	; SKYSHARD BEACONS
+	;=================
+	ElseIf (choice == 1)
 		Int choice01 = DMN_SkyshardsConfigMenuBeacons.Show()
 		If (choice01 == 0)
 		; Enable Beacons.
@@ -86,7 +100,60 @@ Function configureMod()
 			GoToState("postConfig")
 			configureMod()
 		EndIf
-	ElseIf (choice == 2) ; Exit Config Menu.
+	;-------------
+	; QUEST SYSTEM
+	;=============
+	ElseIf (choice == 2)
+		Int choice02 = DMN_SkyshardsConfigMenuQuestSystem.Show()
+		If (choice02 == 0)
+		; Full Quest System.
+			Wait(0.1)
+			Notification("Skyshards: Switching to the Full Quest System...")
+			DMN_SkyshardsQuestSystem.SetValue(1 as Int)
+			DMN_SQD.updateSideQuests()
+			Wait(0.1)
+			Notification("Skyshards: Successfully switched to the Full Quest System!")
+		ElseIf (choice02 == 1)
+		; Lite Quest System.
+			Wait(0.1)
+			Notification("Skyshards: Switching to the Lite Quest System...")
+			DMN_SQD.stopSideQuests()
+			DMN_SkyshardsQuestSystem.SetValue(0 as Int)
+			Wait(0.1)
+			Notification("Skyshards: Successfully switched to the Lite Quest System!")
+		ElseIf (choice02 == 2)
+		; Return To Main Config Menu.
+			GoToState("postConfig")
+			configureMod()
+		EndIf
+	;-----
+	; MISC
+	;=====
+	ElseIf (choice == 3)
+		Int choice03 = DMN_SkyshardsConfigMenuMisc.Show()
+		If (choice03 == 0)
+		; Toggle Debugging.
+			Wait(0.1)
+			If (DMN_SkyshardsDebug.GetValue() as Int == 0)
+				Notification("Skyshards: Turning debug messages on...")
+				DMN_SkyshardsDebug.SetValue(1 as Int)
+				Wait(0.1)
+				Notification("Skyshards: Successfully turned debug messages on!")
+			ElseIf (DMN_SkyshardsDebug.GetValue() as Int == 1)
+				Notification("Skyshards: Turning debug messages off...")
+				DMN_SkyshardsDebug.SetValue(0 as Int)
+				Wait(0.1)
+				Notification("Skyshards: Successfully turned debug messages off!")
+			EndIf
+		ElseIf (choice03 == 1)
+		; Return To Main Config Menu.
+			GoToState("postConfig")
+			configureMod()
+		EndIf
+	;-----------------
+	; EXIT CONFIG MENU
+	;=================
+	ElseIf (choice == 4)
 	Else
 		Notification("Skyshards: The mod configuration script ran into an unknown error. Please inform Deadmano.")
 	EndIf
