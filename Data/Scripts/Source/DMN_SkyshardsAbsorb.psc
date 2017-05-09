@@ -33,6 +33,15 @@ DMN_SkyshardsQuestData Property DMN_SQD Auto
 Actor Property PlayerRef Auto
 {The player reference we will be checking for. Auto-Fill}
 
+FormList Property DMN_SkyshardsAbsorbedList Auto
+{Stores all absorbed Skyshards into this FormList. Auto-Fill.}
+
+FormList Property DMN_SkyshardsAbsorbedStaticList Auto
+{Stores all dynamically placed Skyshard Statics into this FormList. Auto-Fill.}
+
+FormList Property DMN_SkyshardsBeaconList Auto
+{Stores all user-disabled Skyshard Beacons from the MCM. Auto-Fill.}
+
 GlobalVariable Property DMN_SkyshardsActivatedCounter Auto
 {Set this to the ACTIVATED global variable to which DLC/Mod this Skyshard belongs to.
 So DMN_SkyshardsSkyrimCountActivated will increment the Skyrim Skyshard counter.}
@@ -50,9 +59,6 @@ GlobalVariable Property DMN_SkyshardsCountActivated Auto
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 {The amount of perk points awarded to the player after absorbing DMN_SkyshardsCountCap. Auto-Fill.}
 
-Message Property DMN_SkyshardAbsorbedMessage Auto
-{The message shown to the player as a notification when a Skyshard is absorbed. Auto-Fill.}
-
 GlobalVariable Property DMN_SkyshardsSkyrimCountActivated Auto
 {Tracks Skyrim Skyshard activations. Set on Skyshard object if in Skyrim worldspace. Auto-Fill.}
 
@@ -62,14 +68,8 @@ GlobalVariable Property DMN_SkyshardsDLC01CountActivated Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable. Auto-Fill.}
 
-FormList Property DMN_SkyshardsAbsorbedList Auto
-{Stores all absorbed Skyshards into this FormList. Auto-Fill.}
-
-FormList Property DMN_SkyshardsAbsorbedStaticList Auto
-{Stores all dynamically placed Skyshard Statics into this FormList. Auto-Fill.}
-
-FormList Property DMN_SkyshardsBeaconList Auto
-{Stores all user-disabled Skyshard Beacons from the MCM. Auto-Fill.}
+Message Property DMN_SkyshardAbsorbedMessage Auto
+{The message shown to the player as a notification when a Skyshard is absorbed. Auto-Fill.}
 
 Static Property DMN_SkyshardActivated Auto
 {Static version of the Skyshard, switched out when the player activates and absorbs a Skyshard. Auto-Fill.}
@@ -127,7 +127,7 @@ Auto State Absorbing
 			Wait(0.1)
 			GetLinkedRef().Disable(True) ; Disable the Skyshard Beacon with a fade-out.
 		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
-			DMN_SQD.updateQuest()
+			DMN_SQD.updateSideQuests()
 		EndIf
 	EndEvent
 EndState
