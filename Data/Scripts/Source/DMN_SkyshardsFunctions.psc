@@ -209,6 +209,27 @@ Function updateQuestProgress(Quest qst, Quest qstHelper, GlobalVariable gVar, St
 	stopQuestSafe(qstHelper)
 EndFunction
 
+Function hideQuestObjective(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName) Global
+	startQuestSafe(qstHelper) ; Start the helper quest to perform checks on.
+	Int i = 0
+	Int j
+	While (qstHelper.GetAlias(i)) ; Loop through each alias attached to the helper quest. 
+		ObjectReference ref = getQuestAlias(qstHelper, i)
+	 ; If we find a reference that exists, do the following...
+		If (ref)
+			j = 10 * (1+i)
+			If (qst.IsObjectiveDisplayed(j))
+			; Hide the quest objective that is displayed.
+				qst.SetObjectiveDisplayed(j, False, True)
+				debugNotification(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + j + ") to hidden.")
+			EndIf
+		EndIf
+		j = 0
+		i += 1
+	EndWhile
+	stopQuestSafe(qstHelper)
+EndFunction
+
 Function startQuestSafe(Quest qst) Global
 	If (!qst.IsRunning())
 		qst.Start()
@@ -242,7 +263,7 @@ Function setQuestObjectiveDisplayed(ObjectReference ref, Quest qst, Int enum1, I
 		enum2 = 10 * (1+enum1)
 		If (!qst.IsObjectiveDisplayed(enum2))
 			qst.SetObjectiveDisplayed(enum2, True, True)
-			debugNotification(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective displayed value: " + enum2)
+			debugNotification(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + enum2 + ") to displayed.")
 		EndIf
 	EndIf
 EndFunction
@@ -252,7 +273,7 @@ Function setQuestObjectiveCompleted(ObjectReference ref, Quest qst, Int enum1, I
 		enum2 = 10 * (1+enum1)
 		If (!qst.IsObjectiveCompleted(enum2))
 			qst.SetObjectiveCompleted(enum2)
-			debugNotification(gVar, "Skyshards DEBUG:  Set " + holdName + " quest objective completed value: " + enum2)
+			debugNotification(gVar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + enum2 + ") to completed.")
 		EndIf
 	EndIf
 EndFunction
@@ -261,6 +282,6 @@ Function setQuestStage(Quest qst, Int enum, GlobalVariable gVar, String holdName
 	enum = 10 * enum
 	If (qst.GetCurrentStageID() != enum)
 		qst.SetStage(enum)
-		debugNotification(gVar, "Skyshards DEBUG:  Set " + holdName + " quest stage value: " + enum)
+		debugNotification(gVar, "Skyshards DEBUG: Set " + holdName + " quest stage index to (" + enum + ").")
 	EndIf
 EndFunction
