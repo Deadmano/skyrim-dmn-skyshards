@@ -65,9 +65,14 @@ FormList Property DMN_SkyshardsAbsorbedList Auto
 FormList Property DMN_SkyshardsAbsorbedStaticList Auto
 {Stores all dynamically placed Skyshard Statics into this FormList. Auto-Fill.}
 
-GlobalVariable Property DMN_SkyshardsCountCurrent Auto
-{The current amount of Skyshards the player has activated throughout Skyrim and
-other DLCs/Mods which resets once it reaches DMN_SkyshardsCountCap. Auto-Fill.}
+GlobalVariable Property DMN_SkyshardsCountActivated Auto
+{The total amount of Skyshards the player has activated throughout Skyrim and other DLCs/Mods. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsSkyrimCountActivated Auto
+{The total amount of Skyshards the player has activated throughout Skyrim. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsDLC01CountActivated Auto
+{Tracks DLC01 Skyshard activations. Set on Skyshard object if in DLC01 worldspace. Auto-Fill.}
 
 Message Property DMN_SkyshardsUpdateAnnouncement_v1_1_0 Auto
 {The message that is shown to the player for the update to version 1.1.0. Auto-Fill.}
@@ -85,8 +90,21 @@ Static Property DMN_SkyshardActivated Auto
 ;==============================================
 
 Event OnInit()
+	preMaintenance() ; Function to run before the main script maintenance.
     Maintenance() ; Function to handle script maintenance.
 EndEvent
+
+Function preMaintenance()
+	Int i = 0
+
+; Set the total Skyshards found values to the total of each DLC/Mod + base game.
+; Skipped if an existing value is found. Used to correct v1.0.0 saves only.
+	If (i == 0 && DMN_SkyshardsCountActivated.GetValue() as Int == 0)
+	i = (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int) + (DMN_SkyshardsDLC01CountActivated.GetValue() as Int)
+	DMN_SkyshardsCountActivated.SetValue(i as Int)
+	i = 0
+	EndIf
+EndFunction
  
 Function Maintenance()
 ; The latest (current) version of Skyshards. Update this to the version number.
@@ -157,7 +175,7 @@ Function installSkyshards()
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Install Function Reached.")
 	
 ; Check if previous Skyshards have been found from the legacy v1.0.0 version of Skyshards.
-	If (DMN_SkyshardsCountCurrent.GetValue() as Int > 0)
+	If (DMN_SkyshardsCountActivated.GetValue() as Int > 0)
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Unknown Previous Version Update.")
 	; If any are found, we need to update this save's version of Skyshards.
 		updateSkyshards()
