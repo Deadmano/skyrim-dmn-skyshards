@@ -226,7 +226,7 @@ Function updateSkyshards()
 	; Start the main quest up to start tracking existing Skyshards and future ones as well.
 		DMN_SQN.startMainQuest("Skyrim")
 	; Update the quest progress of all previously found Skyshards.
-		DMN_SQD.updateQuest()
+		DMN_SQD.updateSideQuests()
 	EndIf
 ; END v1.0.0 FIXES/PATCHES
 
