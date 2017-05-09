@@ -89,16 +89,24 @@ EndFunction
 
 Function updateMainQuests()
 ;Show quest objective for Skyshards in Skyrim main quest if on the right stage.
-	If (DMN_SkyshardsSkyrim.GetCurrentStageID() == 10)
+	If (DMN_SkyshardsSkyrim.GetCurrentStageID() < 100)
 		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, True, True)
 	EndIf
 
 ; Check progress of Skyshards in Skyrim main quest.
+;==================================================
+; If more than 1 Skyshard was found, advance the quest stage.
+;------------------------------------------------------------
+	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int > 1)
+		DMN_SkyshardsSkyrim.SetStage(20)
+	EndIf
+; If all Skyshards were found, mark the objective and quest as complete.
+;---------------------------------------------------------------
 	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int)
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
 	; Complete the Skyshards in Skyrim main quest.
 		DMN_SkyshardsSkyrim.SetObjectiveCompleted(10)
-		DMN_SkyshardsSkyrim.SetStage(20)
+		DMN_SkyshardsSkyrim.SetStage(100)
 	; Uncomment when releasing the final version to complete the main Skyshards in Skyrim quest.
 		;DMN_SkyshardsSkyrim.CompleteQuest()
 	EndIf
