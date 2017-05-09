@@ -177,6 +177,7 @@ Function updateQuestProgress(Quest qst, Quest qstHelper, GlobalVariable gVar, St
 	Int i = 0
 	Int j
 	Int k
+	Int l = 0
 	While (qstHelper.GetAlias(i)) ; Loop through each alias attached to the helper quest. 
 		ObjectReference ref = getQuestAlias(qstHelper, i)
 	 ; If we find a reference that exists and is disabled, do the following...
@@ -188,13 +189,17 @@ Function updateQuestProgress(Quest qst, Quest qstHelper, GlobalVariable gVar, St
 				startQuestSafeSetStage(qst) ; Start the quest up and set its initial stage.
 			EndIf
 		EndIf
+		i += 1
+	EndWhile
+	While (qstHelper.GetAlias(l)) ; Loop through each alias attached to the helper quest.
+		ObjectReference ref = getQuestAlias(qstHelper, l)
 		If (qst.IsRunning()) ; So long as the quest is running, do the following...
 		; Set and display the objective for each Skyshard.
-			setQuestObjectiveDisplayed(ref, qst, i, j, gVar, holdName)
+			setQuestObjectiveDisplayed(ref, qst, l, j, gVar, holdName)
 		; Mark specific objectives as complete for any found Skyshards.
-			setQuestObjectiveCompleted(ref, qst, i, j, gVar, holdName)
+			setQuestObjectiveCompleted(ref, qst, l, j, gVar, holdName)
 		EndIf
-		i += 1
+		l += 1
 	EndWhile
 	startQuest = False
 	skyshardsActivated = k ; The value of activated Skyshards, based on each reference found that is disabled.
@@ -236,7 +241,7 @@ Function setQuestObjectiveDisplayed(ObjectReference ref, Quest qst, Int enum1, I
 	If (ref)	
 		enum2 = 10 * (1+enum1)
 		If (!qst.IsObjectiveDisplayed(enum2))
-			qst.SetObjectiveDisplayed(enum2)
+			qst.SetObjectiveDisplayed(enum2, True, True)
 			debugNotification(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective displayed value: " + enum2)
 		EndIf
 	EndIf
