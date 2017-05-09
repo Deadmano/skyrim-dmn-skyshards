@@ -44,6 +44,9 @@ other DLCs/Mods which resets once it reaches DMN_SkyshardsCountCap. Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsCountCap Auto
 {The amount of Skyshard absorptions required before gaining a perk point. Auto-Fill.}
 
+GlobalVariable Property DMN_SkyshardsCountActivated Auto
+{The total amount of Skyshards the player has activated throughout Skyrim and other DLCs/Mods. Auto-Fill.}
+
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 {The amount of perk points awarded to the player after absorbing DMN_SkyshardsCountCap. Auto-Fill.}
 
@@ -78,6 +81,7 @@ Auto State Absorbing
 
 			DMN_SkyshardsCountCurrent.Mod(1 as Int)
 			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
+			DMN_SkyshardsCountActivated.Mod(1 as Int)
 			
 		; Add this Skyshard to a FormList so we know it was activated.
 			DMN_SkyshardsAbsorbedList.AddForm(Self)
