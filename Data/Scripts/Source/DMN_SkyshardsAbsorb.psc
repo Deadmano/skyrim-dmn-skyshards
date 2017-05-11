@@ -124,7 +124,7 @@ Auto State Absorbing
 				DMN_SkyshardsBeaconList.RemoveAddedForm(GetLinkedRef())
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Beacon detected and removed from the MCM beacon FormList.")
 			EndIf
-			Wait(0.1)
+			Wait(2.0)
 			GetLinkedRef().Disable(True) ; Disable the Skyshard Beacon with a fade-out.
 		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
 			DMN_SQD.updateSideQuests()
