@@ -76,15 +76,32 @@ Static Property DMN_SkyshardActivated Auto
 
 Auto State Absorbing
 	Event OnActivate(ObjectReference WhoDaresTouchMe)
+	; Ensure script runs only if the Skyshard is activated by the player.
 		If (WhoDaresTouchMe == PlayerRef)
+		; Ensure we don't run the script multiple times per Skyshard activation.
 			GotoState("KochBlock")
 
+		; Update global variables.
 			DMN_SkyshardsCountCurrent.Mod(1 as Int)
 			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
 			DMN_SkyshardsCountActivated.Mod(1 as Int)
 			
 		; Add this Skyshard to a FormList so we know it was activated.
 			DMN_SkyshardsAbsorbedList.AddForm(Self)
+			
+		; Disable the Skyshard and begin the animation sequence.
+			ObjectReference disabledSkyshardStatic = PlaceAtMe(DMN_SkyshardActivated, 1, True, True)
+			disabledSkyshardStatic.EnableNoWait() ; Used to enable the Skyshard Static WITHOUT a fade-in.
+			DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Skyshard Static to a FormList for future use.
+			Wait(1)
+			DisableNoWait() ; Disable the Skyshard Activator WITHOUT a fade-out.
+		; Remove the Skyshard Beacon from the beacon list managed by the MCM, if it exists.
+			If DMN_SkyshardsBeaconList.HasForm(GetLinkedRef())
+				DMN_SkyshardsBeaconList.RemoveAddedForm(GetLinkedRef())
+				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Beacon detected and removed from the MCM beacon FormList.")
+			EndIf
+			Wait(2)
+			GetLinkedRef().Disable(True) ; Disable the Skyshard Beacon with a fade-out.
 			
 		; Check if the Skyshard activated is from Skyrim.
 			If (DMN_SkyshardsActivatedCounter == DMN_SkyshardsSkyrimCountActivated)
@@ -112,20 +129,9 @@ Auto State Absorbing
 			If (DMN_SkyshardsCountCurrent.GetValue() as Int == DMN_SkyshardsCountCap.GetValue() as Int)
 				AddPerkPoints(DMN_SkyshardsPerkPoints.GetValue() as Int)
 				DMN_SkyshardsCountCurrent.SetValue(0 as Int)
+				Notification("Skyshards: I have absorbed enough Skyshards to advance my skills!")
 			EndIf
 
-			ObjectReference disabledSkyshardStatic = PlaceAtMe(DMN_SkyshardActivated, 1, True, True)
-			disabledSkyshardStatic.EnableNoWait() ; Used to enable the Skyshard Static WITHOUT a fade-in.
-			DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Skyshard Static to a FormList for future use.
-			Wait(1)
-			DisableNoWait() ; Disable the Skyshard Activator WITHOUT a fade-out.
-		; Remove the Skyshard Beacon from the beacon list managed by the MCM, if it exists.
-			If DMN_SkyshardsBeaconList.HasForm(GetLinkedRef())
-				DMN_SkyshardsBeaconList.RemoveAddedForm(GetLinkedRef())
-				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Beacon detected and removed from the MCM beacon FormList.")
-			EndIf
-			Wait(2.0)
-			GetLinkedRef().Disable(True) ; Disable the Skyshard Beacon with a fade-out.
 		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
 			DMN_SQD.updateSideQuests()
 		EndIf
