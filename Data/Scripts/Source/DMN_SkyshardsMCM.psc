@@ -31,13 +31,17 @@ FormList Property DMN_SkyshardsMapMarkersList Auto
 FormList Property DMN_SkyshardsBeaconList Auto
 FormList Property DMN_SkyshardsAbsorbedList Auto
 
+GlobalVariable Property DMN_SkyshardsCountCap Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
+GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
 
 Message Property DMN_SkyshardsConfigMenu Auto
 Message Property DMN_SkyshardsConfigMenuBeacons Auto
 Message Property DMN_SkyshardsConfigMenuMapMarkers Auto
 Message Property DMN_SkyshardsConfigMenuMisc Auto
+Message Property DMN_SkyshardsConfigMenuMiscPerkPoints Auto
+Message Property DMN_SkyshardsConfigMenuMiscSkyshardsCap Auto
 Message Property DMN_SkyshardsConfigMenuQuestSystem Auto
 
 Quest Property DMN_SkyshardsHelper Auto
@@ -131,7 +135,91 @@ Function configureMod()
 	;=====
 	ElseIf (choice == 3)
 		Int choice03 = DMN_SkyshardsConfigMenuMisc.Show()
+	; Adjust Skyshards Cap.
 		If (choice03 == 0)
+			Int choice030 = DMN_SkyshardsConfigMenuMiscSkyshardsCap.Show()
+		; Default - 3 Skyshards.
+			If (choice030 == 0)
+				Wait(0.1)
+				DMN_SkyshardsCountCap.SetValue(3 as Int)
+				Notification("Skyshards: Set required Skyshards absorbed cap to 3.")
+				GoToState("postConfig")
+				configureMod()
+		; 6 Skyshards.
+			ElseIf (choice030 == 1)
+				Wait(0.1)
+				DMN_SkyshardsCountCap.SetValue(6 as Int)
+				Notification("Skyshards: Set required Skyshards absorbed cap to 6.")
+				GoToState("postConfig")
+				configureMod()
+		; 9 Skyshards.
+			ElseIf (choice030 == 2)
+				Wait(0.1)
+				DMN_SkyshardsCountCap.SetValue(9 as Int)
+				Notification("Skyshards: Set required Skyshards absorbed cap to 9.")
+				GoToState("postConfig")
+				configureMod()
+		; 12 Skyshards.
+			ElseIf (choice030 == 3)
+				Wait(0.1)
+				DMN_SkyshardsCountCap.SetValue(12 as Int)
+				Notification("Skyshards: Set required Skyshards absorbed cap to 12.")
+				GoToState("postConfig")
+				configureMod()
+		; Check Current.
+			ElseIf (choice030 == 4)
+				Wait(0.1)
+				Notification("Skyshards: Required Skyshards absorbed: " + DMN_SkyshardsCountCap.GetValue() as Int + ".")
+				GoToState("postConfig")
+				configureMod()
+		; Return To Main Config Menu.
+			ElseIf (choice030 == 5)
+				GoToState("postConfig")
+				configureMod()
+			EndIf
+	; Adjust Perk Points Given.
+		ElseIf (choice03 == 1)
+			Int choice031 = DMN_SkyshardsConfigMenuMiscPerkPoints.Show()
+		; Default - 1 Perk Point.
+			If (choice031 == 0)
+				Wait(0.1)
+				DMN_SkyshardsPerkPoints.SetValue(1 as Int)
+				Notification("Skyshards: Set perk points given to 1.")
+				GoToState("postConfig")
+				configureMod()
+		; 2 Perk Points.
+			ElseIf (choice031 == 1)
+				Wait(0.1)
+				DMN_SkyshardsPerkPoints.SetValue(2 as Int)
+				Notification("Skyshards: Set perk points given to 2.")
+				GoToState("postConfig")
+				configureMod()
+		; 3 Perk Points.
+			ElseIf (choice031 == 2)
+				Wait(0.1)
+				DMN_SkyshardsPerkPoints.SetValue(3 as Int)
+				Notification("Skyshards: Set perk points given to 3.")
+				GoToState("postConfig")
+				configureMod()
+		; 4 Perk Points.
+			ElseIf (choice031 == 3)
+				Wait(0.1)
+				DMN_SkyshardsPerkPoints.SetValue(4 as Int)
+				Notification("Skyshards: Set perk points given to 4.")
+				GoToState("postConfig")
+				configureMod()
+		; Check Current.
+			ElseIf (choice031 == 4)
+				Wait(0.1)
+				Notification("Skyshards: Perk points given per absorb cap: " + DMN_SkyshardsPerkPoints.GetValue() as Int + ".")
+				GoToState("postConfig")
+				configureMod()
+		; Return To Main Config Menu.
+			ElseIf (choice031 == 5)
+				GoToState("postConfig")
+				configureMod()
+			EndIf
+		ElseIf (choice03 == 2)
 		; Toggle Debugging.
 			Wait(0.1)
 			If (DMN_SkyshardsDebug.GetValue() as Int == 0)
@@ -145,7 +233,7 @@ Function configureMod()
 				Wait(0.1)
 				Notification("Skyshards: Successfully turned debug messages off!")
 			EndIf
-		ElseIf (choice03 == 1)
+		ElseIf (choice03 == 3)
 		; Return To Main Config Menu.
 			GoToState("postConfig")
 			configureMod()
