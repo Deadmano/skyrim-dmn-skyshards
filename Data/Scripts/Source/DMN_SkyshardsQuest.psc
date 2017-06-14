@@ -129,3 +129,16 @@ Function startMainQuest(String questName)
 		updateMainQuests()
 	EndIf
 EndFunction
+
+Function stopMainQuest(String questName)
+	Quest qst
+	If (questName == "Skyrim")
+		qst = DMN_SkyshardsSkyrim
+	ElseIf (questName == "Dawnguard")
+		; To-Do.
+	EndIf
+	If (qst.IsRunning())
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The Skyshards in " + questName + " quest is running! Stopping it now.")
+		qst.Stop()
+	EndIf
+EndFunction
