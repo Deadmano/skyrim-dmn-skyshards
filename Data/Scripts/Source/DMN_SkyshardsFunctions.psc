@@ -20,6 +20,7 @@ to enhance the Skyshards mod.}
 
 Import Debug
 Import Game
+Import Math
 Import Utility
 Import DMN_DeadmaniacFunctions
 
@@ -168,6 +169,35 @@ Function giveConfigurator(Book configurator) Global
 ; Else remove every configurator in the player inventory and add one, silently.
 		ref.RemoveItem(configurator, i, True)
 		ref.AddItem(configurator, 1, True)
+	EndIf
+EndFunction
+
+Function calculatePerkPoints(GlobalVariable countCurrent, GlobalVariable countCap, GlobalVariable perkPoints, Message msg, GlobalVariable gVar) Global
+	Int i = countCurrent.GetValue() as Int
+	Int j = countCap.GetValue() as Int
+	Int k = perkPoints.GetValue() as Int
+	If (i > j)
+		Float x = i as Float / j as Float
+		Int l = Floor(x)
+		Int m = l * k
+		Float y = x - l
+		Float z = y * j
+		Int n = round(z)
+		Int choice = msg.Show(i, k, j, m)
+		If (choice == 0)
+			Wait(0.1)
+		; Perk Points to give the player.
+			AddPerkPoints(m)
+		; Remainder of the Skyshards found as current.
+			countCurrent.SetValue(n)
+			Notification("Skyshards: I have absorbed enough Skyshards to advance my skills!")
+			debugNotification(gVar, "Skyshards DEBUG: Detected a higher Skyshards absorbed count over the cap! Distributing perk points...")
+			debugNotification(gVar, "Skyshards DEBUG: Skyshards absorbed since last distribution: " + i + ". Current cap value per perk point: " + j + ".")
+			debugNotification(gVar, "Skyshards DEBUG: Perk points given: " + m + ". Remainder under cap: " + n + ".")
+		ElseIf (choice == 1)
+			countCurrent.SetValue(0)
+			debugNotification(gVar, "Skyshards DEBUG: Reset skyshards absorbed counter to 0.")
+		EndIf
 	EndIf
 EndFunction
 
