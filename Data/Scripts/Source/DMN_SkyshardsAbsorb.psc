@@ -122,14 +122,22 @@ Auto State Absorbing
 			DMN_SQN.updateGlobals()
 			DMN_SQN.updateMainQuests()
 
-		; Show the abosrb message once we've allocated the Skyshard counters.
-			DMN_SkyshardAbsorbedMessage.Show()
+		; Show the abosrb message once we've allocated the Skyshard counters
+		; AND if the user has chosen not to opt out of point distribution.
+			If (DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
+				DMN_SkyshardAbsorbedMessage.Show()
+			EndIf
 
-		; Check if we reach the specified Skyshards cap to give perk points.
-			If (DMN_SkyshardsCountCurrent.GetValue() as Int == DMN_SkyshardsCountCap.GetValue() as Int)
+		; Check if we reach the specified Skyshards cap to give perk points and
+		; ensure that the user has not chosen to opt out of point distribution.
+			If (DMN_SkyshardsCountCurrent.GetValue() as Int == DMN_SkyshardsCountCap.GetValue() as Int && \
+			DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
 				AddPerkPoints(DMN_SkyshardsPerkPoints.GetValue() as Int)
 				DMN_SkyshardsCountCurrent.SetValue(0 as Int)
 				Notification("Skyshards: I have absorbed enough Skyshards to advance my skills!")
+		; Else the user had turned off perk point distribution at some point.
+			Else
+				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Perk point distribution is disabled. Skipping perk point allocation.")
 			EndIf
 
 		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
