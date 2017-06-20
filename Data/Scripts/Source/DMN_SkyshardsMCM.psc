@@ -32,6 +32,7 @@ FormList Property DMN_SkyshardsBeaconList Auto
 FormList Property DMN_SkyshardsAbsorbedList Auto
 
 GlobalVariable Property DMN_SkyshardsCountCap Auto
+GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
@@ -43,6 +44,7 @@ Message Property DMN_SkyshardsConfigMenuMisc Auto
 Message Property DMN_SkyshardsConfigMenuMiscPerkPoints Auto
 Message Property DMN_SkyshardsConfigMenuMiscSkyshardsCap Auto
 Message Property DMN_SkyshardsConfigMenuQuestSystem Auto
+Message Property DMN_SkyshardsPerkPointDistribution Auto
 
 Quest Property DMN_SkyshardsHelper Auto
 
@@ -180,42 +182,53 @@ Function configureMod()
 	; Adjust Perk Points Given.
 		ElseIf (choice03 == 1)
 			Int choice031 = DMN_SkyshardsConfigMenuMiscPerkPoints.Show()
-		; Default - 1 Perk Point.
+		; 0 Perk Points.
 			If (choice031 == 0)
+				Wait(0.1)
+				DMN_SkyshardsPerkPoints.SetValue(0 as Int)
+				Notification("Skyshards: Disabled perk point distribution.")
+				GoToState("postConfig")
+				configureMod()
+		; Default - 1 Perk Point.
+			ElseIf (choice031 == 1)
 				Wait(0.1)
 				DMN_SkyshardsPerkPoints.SetValue(1 as Int)
 				Notification("Skyshards: Set perk points given to 1.")
+				calculatePerkPoints(DMN_SkyshardsCountCurrent, DMN_SkyshardsCountCap, DMN_SkyshardsPerkPoints, DMN_SkyshardsPerkPointDistribution, DMN_SkyshardsDebug)
 				GoToState("postConfig")
 				configureMod()
 		; 2 Perk Points.
-			ElseIf (choice031 == 1)
+			ElseIf (choice031 == 2)
 				Wait(0.1)
 				DMN_SkyshardsPerkPoints.SetValue(2 as Int)
 				Notification("Skyshards: Set perk points given to 2.")
+				calculatePerkPoints(DMN_SkyshardsCountCurrent, DMN_SkyshardsCountCap, DMN_SkyshardsPerkPoints, DMN_SkyshardsPerkPointDistribution, DMN_SkyshardsDebug)
 				GoToState("postConfig")
 				configureMod()
 		; 3 Perk Points.
-			ElseIf (choice031 == 2)
+			ElseIf (choice031 == 3)
 				Wait(0.1)
 				DMN_SkyshardsPerkPoints.SetValue(3 as Int)
 				Notification("Skyshards: Set perk points given to 3.")
+				calculatePerkPoints(DMN_SkyshardsCountCurrent, DMN_SkyshardsCountCap, DMN_SkyshardsPerkPoints, DMN_SkyshardsPerkPointDistribution, DMN_SkyshardsDebug)
 				GoToState("postConfig")
 				configureMod()
 		; 4 Perk Points.
-			ElseIf (choice031 == 3)
+			ElseIf (choice031 == 4)
 				Wait(0.1)
 				DMN_SkyshardsPerkPoints.SetValue(4 as Int)
 				Notification("Skyshards: Set perk points given to 4.")
+				calculatePerkPoints(DMN_SkyshardsCountCurrent, DMN_SkyshardsCountCap, DMN_SkyshardsPerkPoints, DMN_SkyshardsPerkPointDistribution, DMN_SkyshardsDebug)
 				GoToState("postConfig")
 				configureMod()
 		; Check Current.
-			ElseIf (choice031 == 4)
+			ElseIf (choice031 == 5)
 				Wait(0.1)
 				Notification("Skyshards: Perk points given per absorb cap: " + DMN_SkyshardsPerkPoints.GetValue() as Int + ".")
 				GoToState("postConfig")
 				configureMod()
 		; Return To Main Config Menu.
-			ElseIf (choice031 == 5)
+			ElseIf (choice031 == 6)
 				GoToState("postConfig")
 				configureMod()
 			EndIf
