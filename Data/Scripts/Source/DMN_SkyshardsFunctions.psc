@@ -97,7 +97,7 @@ Function showSkyshardMapMarkers(FormList mapMarkerList, Bool toggleState) Global
 	EndWhile
 EndFunction
 
-Function showSkyshardBeacons(Quest qst, FormList flt, Bool toggleState, Alias als = None) Global
+Function showSkyshardBeacons(Quest qst, FormList flt, Bool toggleState, GlobalVariable gVar, Alias als = None) Global
 ; Enable found references that are disabled and not part of a FormList.
 	Int i = flt.GetSize() ; Get the number of items in the FormList.
 	If (toggleState)
@@ -108,7 +108,7 @@ Function showSkyshardBeacons(Quest qst, FormList flt, Bool toggleState, Alias al
 			beacon.Enable()
 			j += 1
 		EndWhile
-		Notification("Skyshards: " + (j-i) + "/" + j + " Skyshard beacons enabled.")
+		debugNotification(gVar, "Skyshards DEBUG: " + (j-i) + "/" + j + " Skyshard beacons enabled.")
 		flt.Revert() ; Empty out the FormList once we are done enabling all records therein.
 	ElseIf (!toggleState)
 		qst.Start() ; Start the quest to fill the alias with the first match.
@@ -135,7 +135,7 @@ Function showSkyshardBeacons(Quest qst, FormList flt, Bool toggleState, Alias al
 			EndIf
 		EndWhile
 		qst.Stop() ; Once there are no more matches to fill the alias, we end the quest.
-		Notification("Skyshards: " + (k-i) + "/" + k + " Skyshard beacons disabled.")
+		debugNotification(gVar, "Skyshards DEBUG: " + (k-i) + "/" + k + " Skyshard beacons disabled.")
 	EndIf
 EndFunction
 
