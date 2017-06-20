@@ -52,6 +52,7 @@ String DMN_sSkyshardsVersionRunning
 
 ; The following store the amount of Skyshards
 ; that each version of the mod contains.
+Int DMN_iSkyshardsTotalCurrent
 Int DMN_iSkyshardsTotal_v1_0_0
 Int DMN_iSkyshardsTotal_v1_1_0
 Int DMN_iSkyshardsTotal_v1_2_0
@@ -101,7 +102,19 @@ GlobalVariable Property DMN_SkyshardsCountTotal Auto
 GlobalVariable Property DMN_SkyshardsSkyrimCountTotal Auto
 {The amount of Skyshards that exist in total throughout Skyrim. Auto-Fill.}
 
+Message Property DMN_SkyshardsUpdateAnnouncement_v1_2_0 Auto
+{The message that is shown to the player for the update to version 1.2.0. Auto-Fill.}
+
 ; END v1.2.0
+;-------------
+
+; BEGIN v1.3.0
+;-------------
+
+Message Property DMN_SkyshardsUpdateAnnouncement_v1_3_0 Auto
+{The message that is shown to the player for the update to version 1.3.0. Auto-Fill.}
+
+; END v1.3.0
 ;-------------
 
 ; END Update Related Variables and Properties
@@ -130,6 +143,7 @@ Function Maintenance()
 ; ---------------- UPDATE! ^^^^^^^^^^^
 
 ; Skyshards added per version.
+	DMN_iSkyshardsTotalCurrent = DMN_SkyshardsCountTotal.GetValue() as Int
 	DMN_iSkyshardsTotal_v1_0_0 = 21	; v1.0.0
 	DMN_iSkyshardsTotal_v1_1_0 = 21 ; v1.1.0
 	DMN_iSkyshardsTotal_v1_2_0 = 43 ; v1.2.0
@@ -208,6 +222,7 @@ Function installSkyshards()
 	Else
 		Wait(0.1)
 		Notification("Skyshards: Installation and configuration in progress.")
+		Notification("Skyshards: Please do not quit or save the game until this process is complete.")
 		
 	; Set the default configuration settings.
 		configurationDefaults()
@@ -217,6 +232,7 @@ Function installSkyshards()
 		DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
 		Wait(0.1)
 		Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
+		Notification("Skyshards: It is now safe to save your game to finalise the installation!")
 
 	; //Debug - Check if Skyshards passes the install function.
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Install Function Passed.")
@@ -234,6 +250,8 @@ Function updateSkyshards()
 		Wait(0.1)
 		Notification("Skyshards: Updating from version " + DMN_sSkyshardsVersionInstalled + ".")
 	EndIf
+	
+	Notification("Skyshards: Please do not quit or save the game until this process is complete.")
 
 	; // BEGIN UPDATE FOR CURRENT SCRIPT VERSION
 	;-------------------------------------------
@@ -262,7 +280,24 @@ Function updateSkyshards()
 ;-------
 	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "1", "0") && \
 		DMN_iSkyshardsVersionRunning >= 1100)
+		Wait(3.0)
 		DMN_SkyshardsUpdateAnnouncement_v1_1_0.Show()
+	EndIf
+	
+; v1.2.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "2", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1200)
+		Wait(3.0)
+		DMN_SkyshardsUpdateAnnouncement_v1_2_0.Show()
+	EndIf
+	
+; v1.3.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "3", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1300)
+		Wait(3.0)
+		DMN_SkyshardsUpdateAnnouncement_v1_3_0.Show()
 	EndIf
 
 	; // END VERSION SPECIFIC ANNOUNCEMENT MESSAGES
@@ -274,22 +309,22 @@ Function updateSkyshards()
 ; v1.2.0
 ;-------
 	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "2", "0") && \
-		DMN_sSkyshardsVersionRunning == "1.2.0")
-			DMN_SkyshardsCountTotal.SetValue(DMN_iSkyshardsTotal_v1_2_0 as Int)
-			DMN_SkyshardsSkyrimCountTotal.SetValue(DMN_iSkyshardsTotal_v1_2_0 as Int)
-			Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
-			+ "(" + DMN_iSkyshardsTotal_v1_1_0 + " > " + DMN_iSkyshardsTotal_v1_2_0 + ").")
+	DMN_sSkyshardsVersionRunning == "1.2.0")
+		DMN_SkyshardsCountTotal.SetValue(DMN_iSkyshardsTotal_v1_2_0 as Int)
+		DMN_SkyshardsSkyrimCountTotal.SetValue(DMN_iSkyshardsTotal_v1_2_0 as Int)
+		Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
+		+ "(" + DMN_iSkyshardsTotalCurrent + " > " + DMN_iSkyshardsTotal_v1_2_0 + ").")
 	EndIf
 	
 ; v1.3.0
 ;-------
 	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "3", "0") && \
-		DMN_SkyshardsSkyrimCountTotal.GetValue() as Int != DMN_iSkyshardsTotal_v1_3_0 && \
-		DMN_iSkyshardsVersionRunning >= 1300) ; Greater Than or Equal To v1.3.0.
-			DMN_SkyshardsCountTotal.SetValue(DMN_iSkyshardsTotal_v1_3_0 as Int)
-			DMN_SkyshardsSkyrimCountTotal.SetValue(DMN_iSkyshardsTotal_v1_3_0 as Int)
-			Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
-			+ "(" + DMN_iSkyshardsTotal_v1_2_0 + " > " + DMN_iSkyshardsTotal_v1_3_0 + ").")
+	DMN_SkyshardsSkyrimCountTotal.GetValue() as Int != DMN_iSkyshardsTotal_v1_3_0 && \
+	DMN_iSkyshardsVersionRunning >= 1300) ; Greater Than or Equal To v1.3.0.
+		DMN_SkyshardsCountTotal.SetValue(DMN_iSkyshardsTotal_v1_3_0 as Int)
+		DMN_SkyshardsSkyrimCountTotal.SetValue(DMN_iSkyshardsTotal_v1_3_0 as Int)
+		Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
+		+ "(" + DMN_iSkyshardsTotalCurrent + " > " + DMN_iSkyshardsTotal_v1_3_0 + ").")
 	EndIf
 	
 	; // END VERSION SPECIFIC UPDATES
@@ -313,6 +348,7 @@ Function updateSkyshards()
 	DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
 	Wait(0.1)
 	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
+	Notification("Skyshards: It is now safe to save your game to finalise the update!")
 
 ; //Debug - Check if Skyshards passes the update function.
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Checkpoint - Update Function Passed.")
