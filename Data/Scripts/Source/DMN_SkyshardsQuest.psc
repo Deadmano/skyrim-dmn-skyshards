@@ -87,28 +87,51 @@ Function updateGlobals()
 	EndWhile
 EndFunction
 
-Function updateMainQuests()
-;Show quest objective for Skyshards in Skyrim main quest if on the right stage.
-	If (DMN_SkyshardsSkyrim.GetCurrentStageID() < 100)
-		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, True, True)
-	EndIf
-
+Function updateMainQuests(Bool bSilent = False)
 ; Check progress of Skyshards in Skyrim main quest.
 ;==================================================
+; If all Skyshards were found, mark the objective and quest as complete.
+;-----------------------------------------------------------------------
+	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int)
+; BEGIN TEMP SECTION UNTIL ALL SKYSHARDS ARE ADDED.
+;==================================================
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim in this version! Marking objective as complete now.")
+	; Hide the objective that displays how many Skyshards have been found.
+		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, False, True)
+	; Show the placeholder objective that hints to more Skyshards being added in a later update.
+		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(100, True, True)
+		DMN_SkyshardsSkyrim.SetObjectiveCompleted(100)
+; END TEMP SECTION UNTIL ALL SKYSHARDS ARE ADDED.
+;==================================================
+	; Uncomment when releasing the final version to complete the main Skyshards in Skyrim quest.
+	;===========================================================================================
+	; Complete the Skyshards in Skyrim main quest.
+		;debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
+		;DMN_SkyshardsSkyrim.CompleteQuest()
+	EndIf
+; If new Skyshards have been added, and the cap increased.
+; And if the placeholder objective is the one displayed.
+;---------------------------------------------------------
+	If (DMN_SkyshardsSkyrimCountTotal.GetValue() as Int > DMN_SkyshardsSkyrimCountActivated.GetValue() as Int \
+		&& DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100))
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: New Skyshards detected. Updating quest objective.")
+	; Hide the placeholder objective, so that the new objective further down can be shown.
+		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(100, False, True)
+	EndIf
 ; If more than 1 Skyshard was found, advance the quest stage.
 ;------------------------------------------------------------
-	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int > 1)
+	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int > 1 && DMN_SkyshardsSkyrim.GetCurrentStageID() != 20)
 		DMN_SkyshardsSkyrim.SetStage(20)
 	EndIf
-; If all Skyshards were found, mark the objective and quest as complete.
-;---------------------------------------------------------------
-	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int)
-		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
-	; Complete the Skyshards in Skyrim main quest.
-		DMN_SkyshardsSkyrim.SetObjectiveCompleted(10)
-		DMN_SkyshardsSkyrim.SetStage(100)
-	; Uncomment when releasing the final version to complete the main Skyshards in Skyrim quest.
-		;DMN_SkyshardsSkyrim.CompleteQuest()
+; Show the quest objective for the Skyshards in Skyrim main quest if on the
+; right stages AND if the placeholder objective is NOT currently displayed.
+	If (DMN_SkyshardsSkyrim.GetCurrentStageID() < 100 && !DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100))
+		If (bSilent)
+		; Hide the objective notification if it's already been shown before.
+			DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, True, False)
+		Else
+			DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, True, True)
+		EndIf
 	EndIf
 EndFunction
 
