@@ -19,11 +19,14 @@ ScriptName DMN_DeadmaniacFunctions
 to enhance Papyrus scripting.}
 
 ;============================================
-; Version: 0.3.0
-; Updated: 2017/06/20
+; Version: 0.4.0
+; Updated: 2017/09/22
 ;--------------------
 ; VERSION HISTORY:
 ;====================
+; 0.4.0 | 2017/09/22
+;	+Added debugTrace.
+;
 ; 0.3.0 | 2017/06/20
 ;	+Added round.
 ;
@@ -42,6 +45,7 @@ to enhance Papyrus scripting.}
 ;--------------------
 ; FUNCTIONS:
 ;	[debugNotification]: Takes a [GlobalVariable] which handles if the debug notifcations are shown and a [String] that displays the notification message.
+; 	[debugTrace]: Takes a [GlobalVariable] which handles if the debug trace messages are shown and a [String] that displays the trace message. Supports optional severity levels.
 ;	[round]: Takes a [Float] value and rounds it to the nearest whole [Integer].
 ; 	[updateAliasRef]: Takes the provided [Alias] reference from the specified [Quest] and performs an action on it for each matching reference the alias fills.
 ;	[ver3ToInteger]: Takes a [String] in the format of Major/Minor/Release versioning ("X", "Y", "Z") (direct or variable) and outputs it into a plain number [Integer].
@@ -66,6 +70,24 @@ Function debugNotification(GlobalVariable gDebugVariable, String sDebugMessage) 
 	If (gDebugVariable.GetValue() == 1)
 		Wait(0.1)
 		Notification(sDebugMessage)
+	EndIf
+EndFunction
+
+; debugTrace:
+; ------------------
+; Takes the provided GlobalVariable which decides if the provided String message is shown as a
+; trace message in the log file or not. It expects that your global variable is set to 1 for
+; debug trace messages to be shown. If the variable is 0 then no trace messages are logged.
+; 
+; EXAMPLE USAGE:
+; GlobalVariable Property gDebugVariable Auto ; The global variable that handles your debug state.
+; debugTrace(gDebugVariable, "This is my debug trace message.", 1) ; OUTPUT: This is my debug trace message, shown as a warning.
+; SEVERITY LEVELS (optional): 0: Info (default). 1: Warning. 2: Error.
+
+Function debugTrace(GlobalVariable gDebugVariable, String sDebugMessage, Int iSeverity = 0) Global
+	If (gDebugVariable.GetValue() == 1)
+		Wait(0.1)
+		Trace(sDebugMessage, iSeverity)
 	EndIf
 EndFunction
 
