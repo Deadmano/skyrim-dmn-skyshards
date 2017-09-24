@@ -23,6 +23,8 @@ Import Game
 Import DMN_DeadmaniacFunctions
 Import DMN_SkyshardsFunctions
 
+DMN_SkyshardsQuestData Property DMN_SQD Auto
+
 GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 {The current amount of Skyshards the player has activated throughout Skyrim and
 other DLCs/Mods which resets once it reaches DMN_SkyshardsCountCap. Auto-Fill.}
@@ -93,21 +95,12 @@ Function updateMainQuests(Bool bSilent = False)
 ; If all Skyshards were found, mark the objective and quest as complete.
 ;-----------------------------------------------------------------------
 	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int)
-; BEGIN TEMP SECTION UNTIL ALL SKYSHARDS ARE ADDED.
-;==================================================
-		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim in this version! Marking objective as complete now.")
-	; Hide the objective that displays how many Skyshards have been found.
-		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, False, True)
-	; Show the placeholder objective that hints to more Skyshards being added in a later update.
-		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(100, True, True)
-		DMN_SkyshardsSkyrim.SetObjectiveCompleted(100)
-; END TEMP SECTION UNTIL ALL SKYSHARDS ARE ADDED.
-;==================================================
-	; Uncomment when releasing the final version to complete the main Skyshards in Skyrim quest.
-	;===========================================================================================
 	; Complete the Skyshards in Skyrim main quest.
-		;debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
-		;DMN_SkyshardsSkyrim.CompleteQuest()
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
+		DMN_SQD.stopSideQuests() ; Complete and hide the side quests.
+		DMN_SkyshardsSkyrim.SetStage(200) ; Set the main quest completed stage.
+		DMN_SkyshardsSkyrim.SetObjectiveCompleted(10) ; Mark the main quest objective as completed.
+		DMN_SkyshardsSkyrim.CompleteQuest() ; Complete the main quest.
 	EndIf
 ; If new Skyshards have been added, and the cap increased.
 ; And if the placeholder objective is the one displayed.
