@@ -98,46 +98,80 @@ Function showSkyshardMapMarkers(FormList mapMarkerList, Bool toggleState) Global
 	EndWhile
 EndFunction
 
-Function showSkyshardBeacons(Quest qst, FormList flt, Bool toggleState, GlobalVariable gVar, Alias als = None) Global
-; Enable found references that are disabled and not part of a FormList.
-	Int i = flt.GetSize() ; Get the number of items in the FormList.
-	If (toggleState)
-		int j
-		While (i > 0) ; Stop looping once we have gone through each record in our FormList.
-			i -= 1
-			ObjectReference beacon = flt.GetAt(i) as ObjectReference
-			beacon.Enable()
-			j += 1
-		EndWhile
-		debugNotification(gVar, "Skyshards DEBUG: " + (j-i) + "/" + j + " Skyshard beacons enabled.")
-		flt.Revert() ; Empty out the FormList once we are done enabling all records therein.
-	ElseIf (!toggleState)
-		qst.Start() ; Start the quest to fill the alias with the first match.
-		If qst.IsStarting()
-			Wait(0.1)
+Function showSkyshardStatics(FormList staticList, Bool toggleState) Global
+	Int i = staticList.GetSize() ; Get the count of Skyshard Statics in the FormList.
+	While (i) ; Stop looping if we can't find a Skyshard Static in our FormList.
+		i -= 1
+		ObjectReference ref = staticList.GetAt(i) as ObjectReference
+	; Disable found references that are enabled.
+		If (toggleState == False)
+			If (ref.IsEnabled())
+				ref.Disable(True)
+			EndIf
+	; Enable found references that are enabled.
+		ElseIf (toggleState == True)
+			If (ref.IsDisabled())
+				ref.Enable(True)
+			EndIf
 		EndIf
-		Int k
-		ObjectReference ref = (als as ReferenceAlias).GetReference()
-		While (ref != None) ; Stop looping once our alias cannot be found.
-			If (qst.IsStopped())
-				qst.Start() ; Start the quest in the loop.
-				If (qst.IsStarting())
-					Wait(0.1)
-				EndIf
+	EndWhile
+EndFunction
+
+Function showSkyshardBeacons(FormList flt1, FormList flt2, GlobalVariable gVar, Bool toggleState) Global
+	Float fscriptStart = GetCurrentRealTime() ; Log the time the script started running.
+	Float fscriptStop ; Log the time the script stopped running.
+	Int i = flt1.GetSize() ; Get the count of Skyshard beacons in the Beacons FormList.
+	Int j = 0
+	String debugMsg = ""
+	If (flt2.GetSize() == 0)
+		debugMsg += "\n\n===Skyshards DEBUG: BEGIN COPYING BEACONS TO MCM BEACON FORMLIST!==="
+		While (j < i) ; Stop looping once we've gone through each record in the Beacon FormList.
+			ObjectReference ref1 = flt1.GetAt(j) as ObjectReference
+		; If we find a beacon that isn't already disabled, add it to our MCM Beacon FormList.
+			If (!ref1.IsDisabled())
+				debugMsg += "\nSkyshards DEBUG: Beacon Is Enabled (Adding): " + ref1
+				flt2.AddForm(ref1)
+			Else
+		; Else we skip the existing disabled beacons as they should stay disabled.
+				debugMsg += "\nSkyshards DEBUG: Beacon Is Disabled (Skipping): " + ref1
 			EndIf
-			ref = (als as ReferenceAlias).GetReference()
-			If (ref && ref.IsEnabled()) ; Ensure we don't waste time performing actions on an empty reference.
-				flt.AddForm(ref) ; Add the disabled Skyshard Beacon to a FormList for future use.
-				ref.Disable(); Disable found references that are enabled.
-				k += 1
-			EndIf
-			If (qst.IsRunning())
-				qst.Stop() ; Stop the quest in the loop.
-			EndIf
+			j += 1 
 		EndWhile
-		qst.Stop() ; Once there are no more matches to fill the alias, we end the quest.
-		debugNotification(gVar, "Skyshards DEBUG: " + (k-i) + "/" + k + " Skyshard beacons disabled.")
+		debugMsg += "\n===Skyshards DEBUG: FINISHED COPYING BEACONS TO MCM BEACON FORMLIST!===\n"
+		j = 0
+	Else
+		debugMsg += "\n\n===Skyshards DEBUG: MCM BEACON FORMLIST ALREADY EXISTS! SKIP COPYING.===\n"
 	EndIf
+	debugMsg += "\n===Skyshards DEBUG: BEGIN ALTERING BEACON STATES IN MCM BEACON FORMLIST!==="
+	While (j < i) ; Stop looping once we've gone through each record in the MCM Beacon FormList.
+		ObjectReference ref2 = flt2.GetAt(j) as ObjectReference
+	; Enable valid beacons.
+		If (toggleState)
+			If (ref2 != None)
+				debugMsg += "\nSkyshards DEBUG: Enabling Beacon: " + ref2
+				ref2.Enable()
+			EndIf
+	; Disable valid beacons.
+		ElseIf (!toggleState)
+			If (ref2 != None)
+				debugMsg += "\nSkyshards DEBUG: Disabling Beacon: " + ref2
+				ref2.Disable()
+			EndIf
+		EndIf
+		j += 1
+	EndWhile
+	debugMsg += "\n===Skyshards DEBUG: FINISHED ALTERING BEACON STATES IN MCM BEACON FORMLIST!===\n"
+	j = 0
+; Once all beacons have been enabled, clear the MCM Beacon FormList for future use.
+	If (toggleState)
+		debugMsg += "\n===Skyshards DEBUG: EMPTYING MCM BEACON FORMLIST. (" + flt2.GetSize() + " FORMS)==="
+		flt2.Revert()
+		debugMsg += "\nSkyshards DEBUG: MCM BEACON FORMLIST CONTAINS " + flt2.GetSize() + " FORMS."
+	EndIf
+	fscriptStop = GetCurrentRealTime()
+	debugMsg += "\n\n===Skyshards: SCRIPT EXECUTION COMPLETE! Function took " + (fscriptStop - fscriptStart) + " seconds to complete.===\n\n"
+; Log the debug messages if the player has enabled the debug option.
+	debugTrace(gVar, debugMsg)
 EndFunction
 
 Int Function checkSkyshardQuestAlias(Quest qst)
