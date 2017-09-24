@@ -21,35 +21,34 @@ Import Debug
 Import Game
 Import Utility
 
-EffectShader Property DragonPowerAbsorbFXS Auto
+Actor Property PlayerREF Auto
+EffectShader Property DMN_SkyshardsAbsorbingFX Auto
 {Auto-Fill.}
-VisualEffect Property DragonAbsorbManEffect Auto
-{Use DLC2MiraakAbsorbManE.}
+VisualEffect Property DMN_SkyshardsAbsorbedVFX Auto
+{Auto-Fill.}
 
 Event OnActivate(ObjectReference AbsorbActor)
-	If AbsorbActor == GetPlayer()
-	; Adds the dragon soul absorption effect to the player.
-		DragonAbsorbManEffect.Play(AbsorbActor)
+	If (AbsorbActor == PlayerREF)
 	; Adds a blue aura around the player to signify the absorption.
-		DragonPowerAbsorbFXS.Play(AbsorbActor)
-
+		DMN_SkyshardsAbsorbedVFX.Play(AbsorbActor)
+	; Plays the absorbing visual effect on the player.
+		DMN_SkyshardsAbsorbingFX.Play(AbsorbActor)
 		DisablePlayerControls(1,1,1,0,1,1,1,1,0) ; 1 = enabled, 0 = disabled: Movement, Combat, POV Switch, Looking, Sneaking, Menu, Activation, Journal Tabs, DisablePOVType (0 = Script).
 		SetGodMode(True)
 		SendAnimationEvent(AbsorbActor, "RitualSpellStart")
-		Wait(2)
+		Wait(2.0)
 	EndIf
 
-	If AbsorbActor == GetPlayer()
-		Wait(1)
+	If (AbsorbActor == PlayerREF)
+		Wait(1.0)
 		SendAnimationEvent(AbsorbActor, "MLh_SpellReady_event")
-		Wait(2)
+		Wait(2.0)
 	EndIf
 
-	If AbsorbActor == GetPlayer()
-	; Stop the visual effect and shader on the player.	
-		DragonPowerAbsorbFXS.Stop(AbsorbActor)
-		DragonAbsorbManEffect.Stop(AbsorbActor)
-
+	If (AbsorbActor == PlayerREF)
+	; Stops the visual effect and shader on the player.	
+		DMN_SkyshardsAbsorbingFX.Stop(AbsorbActor)
+		DMN_SkyshardsAbsorbedVFX.Stop(AbsorbActor)
 		SendAnimationEvent(AbsorbActor, "Ritualspellout")
 		SetGodMode(False)
 		EnablePlayerControls()
