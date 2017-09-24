@@ -58,6 +58,21 @@ EndFunction
 
 Function stopSideQuests()
 	Int i = holdQuest.Length
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Completing hold quests...")
+	While (i)
+		i -= 1
+	; Hide running side-quest objectives, complete and stop them.
+		If (holdQuest[i].IsRunning())
+			hideQuestObjective(holdQuest[i], holdQuestHelper[i], DMN_SkyshardsDebug, holdName[i])
+			holdQuest[i].CompleteQuest()
+			holdQuest[i].Stop()
+		EndIf
+	EndWhile
+	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Hold quests have been completed!")
+EndFunction
+
+Function stopTrackingSideQuests()
+	Int i = holdQuest.Length
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Stopping hold quests...")
 	While (i)
 		i -= 1
