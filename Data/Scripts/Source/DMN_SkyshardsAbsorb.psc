@@ -39,7 +39,7 @@ FormList Property DMN_SkyshardsAbsorbedList Auto
 FormList Property DMN_SkyshardsAbsorbedStaticList Auto
 {Stores all dynamically placed Skyshard Statics into this FormList. Auto-Fill.}
 
-FormList Property DMN_SkyshardsBeaconList Auto
+FormList Property DMN_SkyshardsBeaconListMCM Auto
 {Stores all user-disabled Skyshard Beacons from the MCM. Auto-Fill.}
 
 GlobalVariable Property DMN_SkyshardsActivatedCounter Auto
@@ -96,8 +96,8 @@ Auto State Absorbing
 			Wait(1)
 			DisableNoWait() ; Disable the Skyshard Activator WITHOUT a fade-out.
 		; Remove the Skyshard Beacon from the beacon list managed by the MCM, if it exists.
-			If DMN_SkyshardsBeaconList.HasForm(GetLinkedRef())
-				DMN_SkyshardsBeaconList.RemoveAddedForm(GetLinkedRef())
+			If DMN_SkyshardsBeaconListMCM.HasForm(GetLinkedRef())
+				DMN_SkyshardsBeaconListMCM.RemoveAddedForm(GetLinkedRef())
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Beacon detected and removed from the MCM beacon FormList.")
 			EndIf
 			Wait(2)
