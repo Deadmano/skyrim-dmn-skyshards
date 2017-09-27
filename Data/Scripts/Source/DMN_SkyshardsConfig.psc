@@ -17,7 +17,7 @@ ScriptName DMN_SkyshardsConfig Extends Quest
 
 {Skyshards - Configuration Script by Deadmano.}
 ;==============================================
-; Version: 1.4.0
+; Version: 1.5.0
 ;===============
 
 Import DMN_DeadmaniacFunctions
@@ -58,6 +58,7 @@ Int DMN_iSkyshardsTotal_v1_1_0
 Int DMN_iSkyshardsTotal_v1_2_0
 Int DMN_iSkyshardsTotal_v1_3_0
 Int DMN_iSkyshardsTotal_v1_4_0
+Int DMN_iSkyshardsTotal_v1_5_0
 
 ; BEGIN Update Related Variables and Properties
 ;==============================================
@@ -127,6 +128,15 @@ Message Property DMN_SkyshardsUpdateAnnouncement_v1_4_0 Auto
 ; END v1.4.0
 ;-------------
 
+; BEGIN v1.5.0
+;-------------
+
+Message Property DMN_SkyshardsUpdateAnnouncement_v1_5_0 Auto
+{The message that is shown to the player for the update to version 1.5.0. Auto-Fill.}
+
+; END v1.5.0
+;-------------
+
 ; END Update Related Variables and Properties
 ;==============================================
 
@@ -149,7 +159,7 @@ EndFunction
  
 Function Maintenance()
 ; The latest (current) version of Skyshards. Update this to the version number.
-	parseSkyshardsVersion("1", "4", "0") ; <--- CHANGE! No more than: "9e9", "99", "9".
+	parseSkyshardsVersion("1", "5", "0") ; <--- CHANGE! No more than: "9e9", "99", "9".
 ; ---------------- UPDATE! ^^^^^^^^^^^
 
 ; Skyshards added per version.
@@ -159,6 +169,7 @@ Function Maintenance()
 	DMN_iSkyshardsTotal_v1_2_0 = 43 ; v1.2.0
 	DMN_iSkyshardsTotal_v1_3_0 = 67 ; v1.3.0
 	DMN_iSkyshardsTotal_v1_4_0 = 89 ; v1.4.0
+	DMN_iSkyshardsTotal_v1_5_0 = 108 ; v1.5.0
 
 	If (DMN_SkyshardsDebug.GetValue() == 1)
 		If (DMN_sSkyshardsVersionInstalled)
@@ -318,6 +329,14 @@ Function updateSkyshards()
 		Wait(3.0)
 		DMN_SkyshardsUpdateAnnouncement_v1_4_0.Show()
 	EndIf
+	
+; v1.5.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "5", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1500)
+		Wait(3.0)
+		DMN_SkyshardsUpdateAnnouncement_v1_5_0.Show()
+	EndIf
 
 	; // END VERSION SPECIFIC ANNOUNCEMENT MESSAGES
 	;------------------------------------------------
@@ -350,11 +369,22 @@ Function updateSkyshards()
 ;-------
 	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "4", "0") && \
 	DMN_SkyshardsSkyrimCountTotal.GetValue() as Int != DMN_iSkyshardsTotal_v1_4_0 && \
-	DMN_iSkyshardsVersionRunning >= 1400) ; Greater Than or Equal To v1.4.0.
+	DMN_iSkyshardsVersionRunning == 1400)
 		DMN_SkyshardsCountTotal.SetValue(DMN_iSkyshardsTotal_v1_4_0 as Int)
 		DMN_SkyshardsSkyrimCountTotal.SetValue(DMN_iSkyshardsTotal_v1_4_0 as Int)
 		Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
 		+ "(" + DMN_iSkyshardsTotalCurrent + " > " + DMN_iSkyshardsTotal_v1_4_0 + ").")
+	EndIf
+	
+; v1.5.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "5", "0") && \
+	DMN_SkyshardsSkyrimCountTotal.GetValue() as Int != DMN_iSkyshardsTotal_v1_5_0 && \
+	DMN_iSkyshardsVersionRunning >= 1500) ; Greater Than or Equal To v1.5.0.
+		DMN_SkyshardsCountTotal.SetValue(DMN_iSkyshardsTotal_v1_5_0 as Int)
+		DMN_SkyshardsSkyrimCountTotal.SetValue(DMN_iSkyshardsTotal_v1_5_0 as Int)
+		Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
+		+ "(" + DMN_iSkyshardsTotalCurrent + " > " + DMN_iSkyshardsTotal_v1_5_0 + ").")
 	EndIf
 	
 	; // END VERSION SPECIFIC UPDATES
