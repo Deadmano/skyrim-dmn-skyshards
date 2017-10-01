@@ -118,6 +118,9 @@ Auto State Absorbing
 				; DMN_SQN.startMainQuest("Dawnguard")
 			EndIf
 			
+		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
+			DMN_SQD.updateSideQuests()
+			
 		; Update the global variable values for the tracking quests and check for main quest progression.
 			DMN_SQN.updateGlobals()
 			DMN_SQN.updateMainQuests()
@@ -139,9 +142,6 @@ Auto State Absorbing
 			Else
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Perk point distribution is disabled. Skipping perk point allocation.")
 			EndIf
-
-		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
-			DMN_SQD.updateSideQuests()
 		EndIf
 	EndEvent
 EndState
