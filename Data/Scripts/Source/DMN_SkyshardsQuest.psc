@@ -90,12 +90,14 @@ Function updateGlobals()
 EndFunction
 
 Function updateMainQuests(Bool bSilent = False)
+Bool skyrimCompleted = False
 ; Check progress of Skyshards in Skyrim main quest.
 ;==================================================
 ; If all Skyshards were found, mark the objective and quest as complete.
 ;-----------------------------------------------------------------------
 	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int)
 	; Complete the Skyshards in Skyrim main quest.
+		skyrimCompleted = True
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
 		DMN_SQD.stopSideQuests() ; Complete and hide the side quests.
 		DMN_SkyshardsSkyrim.SetStage(200) ; Set the main quest completed stage.
@@ -106,19 +108,19 @@ Function updateMainQuests(Bool bSilent = False)
 ; And if the placeholder objective is the one displayed.
 ;---------------------------------------------------------
 	If (DMN_SkyshardsSkyrimCountTotal.GetValue() as Int > DMN_SkyshardsSkyrimCountActivated.GetValue() as Int \
-		&& DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100))
+		&& DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100) && !skyrimCompleted)
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: New Skyshards detected. Updating quest objective.")
 	; Hide the placeholder objective, so that the new objective further down can be shown.
 		DMN_SkyshardsSkyrim.SetObjectiveDisplayed(100, False, True)
 	EndIf
 ; If more than 1 Skyshard was found, advance the quest stage.
 ;------------------------------------------------------------
-	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int > 1 && DMN_SkyshardsSkyrim.GetCurrentStageID() != 20)
+	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int > 1 && DMN_SkyshardsSkyrim.GetCurrentStageID() != 20 && !skyrimCompleted)
 		DMN_SkyshardsSkyrim.SetStage(20)
 	EndIf
 ; Show the quest objective for the Skyshards in Skyrim main quest if on the
 ; right stages AND if the placeholder objective is NOT currently displayed.
-	If (DMN_SkyshardsSkyrim.GetCurrentStageID() < 100 && !DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100))
+	If (DMN_SkyshardsSkyrim.GetCurrentStageID() < 100 && !DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100) && !skyrimCompleted)
 		If (bSilent)
 		; Hide the objective notification if it's already been shown before.
 			DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, True, False)
