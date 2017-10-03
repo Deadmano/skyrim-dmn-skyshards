@@ -89,13 +89,14 @@ Function updateGlobals()
 	EndWhile
 EndFunction
 
-Function updateMainQuests(Bool bSilent = False)
+Function updateMainQuests(Bool bFinalise = False, Bool bSilent = False)
 Bool skyrimCompleted = False
 ; Check progress of Skyshards in Skyrim main quest.
 ;==================================================
 ; If all Skyshards were found, mark the objective and quest as complete.
 ;-----------------------------------------------------------------------
-	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int)
+	If (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int == DMN_SkyshardsSkyrimCountTotal.GetValue() as Int \
+		&& bFinalise)
 	; Complete the Skyshards in Skyrim main quest.
 		skyrimCompleted = True
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You found all the Skyshards in Skyrim! Marking quest as complete now.")
@@ -120,7 +121,8 @@ Bool skyrimCompleted = False
 	EndIf
 ; Show the quest objective for the Skyshards in Skyrim main quest if on the
 ; right stages AND if the placeholder objective is NOT currently displayed.
-	If (DMN_SkyshardsSkyrim.GetCurrentStageID() < 100 && !DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100) && !skyrimCompleted)
+	If (DMN_SkyshardsSkyrim.GetCurrentStageID() < 100 && !DMN_SkyshardsSkyrim.IsObjectiveDisplayed(100) \ 
+		&& !skyrimCompleted && !bFinalise)
 		If (bSilent)
 		; Hide the objective notification if it's already been shown before.
 			DMN_SkyshardsSkyrim.SetObjectiveDisplayed(10, True, False)

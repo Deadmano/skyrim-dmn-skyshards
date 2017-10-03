@@ -124,13 +124,6 @@ Auto State Absorbing
 				; DMN_SQN.startMainQuest("Dawnguard")
 			EndIf
 			
-		; Update the relevant Skyshards quest to take into account this absorbed Skyshard.
-			DMN_SQD.updateSideQuests()
-			
-		; Update the global variable values for the tracking quests and check for main quest progression.
-			DMN_SQN.updateGlobals()
-			DMN_SQN.updateMainQuests()
-
 		; Show the abosrb message once we've allocated the Skyshard counters
 		; AND if the user has chosen not to opt out of point distribution.
 			If (DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
@@ -148,6 +141,15 @@ Auto State Absorbing
 			Else
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Perk point distribution is disabled. Skipping perk point allocation.")
 			EndIf
+			
+		; Update the global variable values for the tracking quests and check for main quest progression.
+			DMN_SQN.updateGlobals()
+			DMN_SQN.updateMainQuests()
+			
+		; Update the relevant Skyshards side-quest to take into account this absorbed Skyshard.
+			DMN_SQD.updateSideQuests()
+			
+			DMN_SQN.updateMainQuests(True) ; Finalise parameter set to true to complete main quests if requirements are met.
 		EndIf
 	EndEvent
 EndState
