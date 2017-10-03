@@ -68,6 +68,9 @@ GlobalVariable Property DMN_SkyshardsDLC01CountActivated Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable. Auto-Fill.}
 
+GlobalVariable Property DMN_SkyshardsShowStaticSkyshards Auto
+{Whether or not Skyshard statics are displayed. 1 displayed, 0 hidden.}
+
 Message Property DMN_SkyshardAbsorbedMessage Auto
 {The message shown to the player as a notification when a Skyshard is absorbed. Auto-Fill.}
 
@@ -91,10 +94,13 @@ Auto State Absorbing
 			
 		; Disable the Skyshard and begin the animation sequence.
 			ObjectReference disabledSkyshardStatic = PlaceAtMe(DMN_SkyshardActivated, 1, True, True)
-			disabledSkyshardStatic.EnableNoWait() ; Used to enable the Skyshard Static WITHOUT a fade-in.
+		; Only show the Skyshard static if the user hasn't chosen to disable them.
+			If (DMN_SkyshardsShowStaticSkyshards.GetValue() as Int != 0)
+				disabledSkyshardStatic.EnableNoWait() ; Used to enable the Skyshard Static WITHOUT a fade-in.
+			EndIf
 			DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Skyshard Static to a FormList for future use.
 			Wait(1)
-			DisableNoWait() ; Disable the Skyshard Activator WITHOUT a fade-out.
+			Disable(True) ; Disable the Skyshard Activator WITH a fade-out.
 		; Remove the Skyshard Beacon from the beacon list managed by the MCM, if it exists.
 			If DMN_SkyshardsBeaconListMCM.HasForm(GetLinkedRef())
 				DMN_SkyshardsBeaconListMCM.RemoveAddedForm(GetLinkedRef())

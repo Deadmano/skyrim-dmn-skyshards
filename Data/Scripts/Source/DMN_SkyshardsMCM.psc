@@ -34,6 +34,7 @@ GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
+GlobalVariable Property DMN_SkyshardsShowStaticSkyshards Auto
 
 Message Property DMN_SkyshardsConfigMenu Auto
 Message Property DMN_SkyshardsConfigMenuBeacons Auto
@@ -112,6 +113,7 @@ Function configureMod()
 		; Enable Statics.
 			Wait(0.1)
 			Notification("Skyshards: Enabling Skyshard statics...")
+			DMN_SkyshardsShowStaticSkyshards.SetValue(1 as Int)
 			showSkyshardStatics(DMN_SkyshardsAbsorbedStaticList, True)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard statics have been enabled!")
@@ -119,6 +121,7 @@ Function configureMod()
 		; Disable Statics.
 			Wait(0.1)
 			Notification("Skyshards: Disabling Skyshard statics...")
+			DMN_SkyshardsShowStaticSkyshards.SetValue(0 as Int)
 			showSkyshardStatics(DMN_SkyshardsAbsorbedStaticList, False)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard statics have been disabled!")
