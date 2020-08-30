@@ -17,7 +17,7 @@ ScriptName DMN_SkyshardsConfig Extends Quest
 
 {Skyshards - Configuration Script by Deadmano.}
 ;==============================================
-; Version: 1.5.0
+; Version: 1.6.0
 ;===============
 
 Import DMN_DeadmaniacFunctions
@@ -133,11 +133,21 @@ Message Property DMN_SkyshardsUpdateAnnouncement_v1_4_0 Auto
 
 Message Property DMN_SkyshardsUpdateAnnouncement_v1_5_0 Auto
 {The message that is shown to the player for the update to version 1.5.0. Auto-Fill.}
-Message Property DMN_SkyshardsUpdateAnnouncementHandler Auto
-{The message that is shown to the player when multiple updates are detected. Auto-Fill.}
 
 ; END v1.5.0
 ;-------------
+
+; BEGIN v1.6.0
+;-------------
+
+Message Property DMN_SkyshardsUpdateAnnouncement_v1_6_0 Auto
+{The message that is shown to the player for the update to version 1.6.0. Auto-Fill.}
+
+; END v1.6.0
+;-------------
+
+Message Property DMN_SkyshardsUpdateAnnouncementHandler Auto
+{The message that is shown to the player when multiple updates are detected. Auto-Fill.}
 
 ; END Update Related Variables and Properties
 ;==============================================
@@ -161,7 +171,7 @@ EndFunction
  
 Function Maintenance()
 ; The latest (current) version of Skyshards. Update this to the version number.
-	parseSkyshardsVersion("1", "5", "0") ; <--- CHANGE! No more than: "9e9", "99", "9".
+	parseSkyshardsVersion("1", "6", "0") ; <--- CHANGE! No more than: "9e9", "99", "9".
 ; ---------------- UPDATE! ^^^^^^^^^^^
 
 ; Skyshards added per version.
@@ -305,9 +315,10 @@ Function updateSkyshards()
 	Bool v1_3_0 = False
 	Bool v1_4_0 = False
 	Bool v1_5_0 = False
+	Bool v1_6_0 = False
 	Int updateCount = 0
 	; Change this to the latest update announcement message.
-	Message latestUpdate = DMN_SkyshardsUpdateAnnouncement_v1_5_0
+	Message latestUpdate = DMN_SkyshardsUpdateAnnouncement_v1_6_0
 
 ; v1.1.0
 ;-------
@@ -349,6 +360,14 @@ Function updateSkyshards()
 		v1_5_0 = True
 		updateCount += 1
 	EndIf
+
+; v1.6.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1600)
+		v1_6_0 = True
+		updateCount += 1
+	EndIf
 	
 	If (updateCount > 1)
 	; Detected more than one update happening on this user's save.
@@ -375,6 +394,10 @@ Function updateSkyshards()
 			If (v1_5_0)
 				Wait(1.0)
 				DMN_SkyshardsUpdateAnnouncement_v1_5_0.Show()
+			EndIf
+			If (v1_6_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_6_0.Show()
 			EndIf
 	; Show only the latest update announcement.
 		ElseIf (updateAnnouncement == 1)
