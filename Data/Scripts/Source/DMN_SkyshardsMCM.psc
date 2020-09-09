@@ -34,6 +34,7 @@ GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
+GlobalVariable Property DMN_SkyshardsShowMapMarkers Auto
 GlobalVariable Property DMN_SkyshardsShowStaticSkyshards Auto
 
 Message Property DMN_SkyshardsConfigMenu Auto
@@ -65,6 +66,7 @@ Function configureMod()
 		; Enable Map Markers.
 			Wait(0.1)
 			Notification("Skyshards: Enabling map markers...")
+			DMN_SkyshardsShowMapMarkers.SetValue(1 as Int)
 			showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, True)
 			Wait(0.1)
 			Notification("Skyshards: Map markers have been enabled!")
@@ -72,6 +74,7 @@ Function configureMod()
 		; Disable Map Markers.
 			Wait(0.1)
 			Notification("Skyshards: Disabling map markers...")
+			DMN_SkyshardsShowMapMarkers.SetValue(0 as Int)
 			showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
 			Wait(0.1)
 			Notification("Skyshards: Map markers have been disabled!")

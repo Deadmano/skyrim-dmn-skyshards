@@ -143,6 +143,9 @@ Message Property DMN_SkyshardsUpdateAnnouncement_v1_5_0 Auto
 Message Property DMN_SkyshardsUpdateAnnouncement_v1_6_0 Auto
 {The message that is shown to the player for the update to version 1.6.0. Auto-Fill.}
 
+GlobalVariable Property DMN_SkyshardsShowMapMarkers Auto
+{Stores whether map markers are enabled or disabled. Auto-Fill.}
+
 ; END v1.6.0
 ;-------------
 
@@ -459,6 +462,30 @@ Function updateSkyshards()
 		Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
 		+ "(" + DMN_iSkyshardsTotalCurrent + " > " + DMN_iSkyshardsTotal_v1_5_0 + ").")
 	EndIf
+
+; v1.6.0
+;-------
+	; Resolve map markers being turned off every update for those who chose to have map markers enabled.
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
+	DMN_iSkyshardsVersionRunning >= 1600 && DMN_SkyshardsShowMapMarkers.GetValue() != 1) ; Greater Than or Equal To v1.6.0.
+		Int i = DMN_SkyshardsMapMarkersList.GetSize() ; Get the count of map markers in the FormList.
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Checking if map markers were previously enabled...")
+		While (i) ; Stop looping if we can't find a map marker in our FormList.
+			i -= 1
+			ObjectReference ref = DMN_SkyshardsMapMarkersList.GetAt(i) as ObjectReference
+		; Ensure our reference is a map marker in our FormList.
+			If (DMN_SkyshardsMapMarkersList.GetAt(i) == ref)
+			; Check if the map marker is enabled.
+				If (ref.IsEnabled())
+					debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Found a previously enabled map marker! Assuming map markers were previously enabled.")
+					DMN_SkyshardsShowMapMarkers.SetValue(1 as Int) ; Update the newly added global variable to preserve the map markers visibility state.
+					Notification("Skyshards: Your previously enabled map markers have been preserved!")
+					i = 0 ; Stop looking once we've found an enabled map marker.
+				EndIf
+			EndIf
+		EndWhile
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Stopped checking for map markers!")
+	EndIf
 	
 	; // END VERSION SPECIFIC UPDATES
 	;----------------------------------
@@ -492,8 +519,10 @@ Function configurationDefaults()
 	giveConfigurator(DMN_SkyshardsConfigurator)
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Gave the player the latest Skyshards Configurator!")
 	
-; Disable the Skyshard map markers.
-	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Disabling Skyshard map markers...")
-	showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
-	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Skyshard map markers have been disabled!")
+; Disable the Skyshard map markers if players have not previously chosen to display them.
+	If (DMN_SkyshardsShowMapMarkers.GetValue() != 1)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Disabling Skyshard map markers...")
+		showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Skyshard map markers have been disabled!")
+	EndIf
 EndFunction
