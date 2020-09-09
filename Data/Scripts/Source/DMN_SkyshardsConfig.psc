@@ -140,11 +140,17 @@ Message Property DMN_SkyshardsUpdateAnnouncement_v1_5_0 Auto
 ; BEGIN v1.6.0
 ;-------------
 
-Message Property DMN_SkyshardsUpdateAnnouncement_v1_6_0 Auto
-{The message that is shown to the player for the update to version 1.6.0. Auto-Fill.}
+FormList Property DMN_SkyshardsBeaconList Auto
+{Stores all the Skyshard beacons. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsShowBeacons Auto
+{Stores whether beacons are enabled or disabled. Auto-Fill.}
 
 GlobalVariable Property DMN_SkyshardsShowMapMarkers Auto
 {Stores whether map markers are enabled or disabled. Auto-Fill.}
+
+Message Property DMN_SkyshardsUpdateAnnouncement_v1_6_0 Auto
+{The message that is shown to the player for the update to version 1.6.0. Auto-Fill.}
 
 ; END v1.6.0
 ;-------------
@@ -486,6 +492,37 @@ Function updateSkyshards()
 		EndWhile
 		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Stopped checking for map markers!")
 	EndIf
+
+	; Persist beacon visibility state to a global variable.
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1600 && DMN_SkyshardsCountActivated.GetValue() != DMN_SkyshardsCountTotal.GetValue()) ; Greater Than or Equal To v1.6.0.
+			Int i = DMN_SkyshardsBeaconList.GetSize() ; Get the count of beacons in the FormList.
+			Bool beaconsDisabled = False
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Checking if there are any beacons still active...")
+			While (i) ; Stop looping if we can't find a beacon in our FormList.
+				i -= 1
+				ObjectReference ref = DMN_SkyshardsBeaconList.GetAt(i) as ObjectReference
+			; Ensure our reference is a beacon in our FormList.
+				If (DMN_SkyshardsBeaconList.GetAt(i) == ref)
+				; Check if the beacon is enabled.
+					If (ref.IsEnabled())
+						debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Found a previously enabled beacon! Assuming beacons were previously enabled.")
+						beaconsDisabled = False ; Update the boolean to specify beacons are indeed enabled.
+						i = 0 ; Stop looking once we've found an enabled beacon.
+				; If we find a disabled beacon, update the boolean.
+					ElseIf (ref.IsDisabled())
+						beaconsDisabled = True
+					EndIf
+				EndIf
+			EndWhile
+			; If our boolean was set to false at any point due to no active beacons being found,
+			; update the newly added global variable to reflect this change.
+			If (beaconsDisabled)
+				debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: No active beacons found despite active Skyshards. Assuming beacons were previously disabled.")
+				DMN_SkyshardsShowBeacons.SetValue(0 as Int)
+			EndIf
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Stopped checking for beacons!")
+		EndIf
 	
 	; // END VERSION SPECIFIC UPDATES
 	;----------------------------------

@@ -34,6 +34,7 @@ GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
+GlobalVariable Property DMN_SkyshardsShowBeacons Auto
 GlobalVariable Property DMN_SkyshardsShowMapMarkers Auto
 GlobalVariable Property DMN_SkyshardsShowStaticSkyshards Auto
 
@@ -92,6 +93,7 @@ Function configureMod()
 		; Enable Beacons.
 			Wait(0.1)
 			Notification("Skyshards: Enabling Skyshard beacons...")
+			DMN_SkyshardsShowBeacons.SetValue(1 as Int)
 			showSkyshardBeacons(DMN_SkyshardsBeaconList, DMN_SkyshardsBeaconListMCM, DMN_SkyshardsDebug, True)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard beacons have been enabled!")
@@ -99,6 +101,7 @@ Function configureMod()
 		; Disable Beacons.
 			Wait(0.1)
 			Notification("Skyshards: Disabling Skyshard beacons...")
+			DMN_SkyshardsShowBeacons.SetValue(0 as Int)
 			showSkyshardBeacons(DMN_SkyshardsBeaconList, DMN_SkyshardsBeaconListMCM, DMN_SkyshardsDebug, False)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard beacons have been disabled!")
