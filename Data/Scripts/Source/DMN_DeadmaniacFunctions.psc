@@ -19,11 +19,14 @@ ScriptName DMN_DeadmaniacFunctions
 to enhance Papyrus scripting.}
 
 ;============================================
-; Version: 0.4.0
-; Updated: 2017/09/22
+; Version: 0.5.0
+; Updated: 2020/09/17
 ;--------------------
 ; VERSION HISTORY:
 ;====================
+; 0.5.0 | 2020/09/17
+;	+Added disableControl.
+;
 ; 0.4.0 | 2017/09/22
 ;	+Added debugTrace.
 ;
@@ -44,14 +47,16 @@ to enhance Papyrus scripting.}
 ; 	+Added StrVer3ToInt.
 ;--------------------
 ; FUNCTIONS:
-;	[debugNotification]: Takes a [GlobalVariable] which handles if the debug notifcations are shown and a [String] that displays the notification message.
+;	[debugNotification]: Takes a [GlobalVariable] which handles if the debug notifications are shown and a [String] that displays the notification message.
 ; 	[debugTrace]: Takes a [GlobalVariable] which handles if the debug trace messages are shown and a [String] that displays the trace message. Supports optional severity levels.
+;   [disableControl]: Enable or disable a specified player game control at will.
 ;	[round]: Takes a [Float] value and rounds it to the nearest whole [Integer].
 ; 	[updateAliasRef]: Takes the provided [Alias] reference from the specified [Quest] and performs an action on it for each matching reference the alias fills.
 ;	[ver3ToInteger]: Takes a [String] in the format of Major/Minor/Release versioning ("X", "Y", "Z") (direct or variable) and outputs it into a plain number [Integer].
 ;	[ver3ToString]: Takes a [String] in the format of Major/Minor/Release versioning ("X", "Y", "Z") (direct or variable) and outputs it into a formatted [String].
 ;===============
 
+Import Game
 Import Debug
 Import Math
 Import Utility
@@ -91,9 +96,79 @@ Function debugTrace(GlobalVariable gDebugVariable, String sDebugMessage, Int iSe
 	EndIf
 EndFunction
 
+; disableControl
+; ---
+; Offers a more granular approach to Bethesda's(Enable)/(Disable)PlayerControls
+; allowing for toggling of single control states whilst preserving the other
+; states as they were. Takes a provided (case-sensitive) string that represents
+; a control type as well as an optional boolean representing the control state. 
+; ---
+; EXAMPLE USAGE:
+; disableControl("menu") ; Will disable ONLY the menu system.
+; disableControl("menu", "false") ; Will re-enable the menu system.
+; ---
+; AVAILABLE TYPES:
+; activate, cam, fighting, journal, looking, menu, movement, sneaking
+Function disableControl(String control, Bool isDisabled = True) Global
+	; Get the initial state of the player controls.
+	Bool isActivateDisabled = !IsActivateControlsEnabled()
+	Bool isCamSwitchDisabled = !IsCamSwitchControlsEnabled()
+	Bool isFightingDisabled = !IsFightingControlsEnabled()
+	Bool isJournalDisabled = !IsJournalControlsEnabled()
+	Bool isLookingDisabled = !IsLookingControlsEnabled()
+	Bool isMenuDisabled = !IsMenuControlsEnabled()
+	Bool isMovementDisabled = !IsMovementControlsEnabled()
+	Bool isSneakingDisabled = !IsSneakingControlsEnabled()
+
+	; Match the input control to one of our supported types.
+
+	If (control == "activate")
+		isActivateDisabled = isDisabled
+	EndIf
+
+	If (control == "cam")
+		isCamSwitchDisabled = isDisabled
+	EndIf
+
+	If (control == "fighting")
+		isFightingDisabled = isDisabled
+	EndIf
+
+	If (control == "journal")
+		isJournalDisabled = isDisabled
+	EndIf
+
+	If (control == "looking")
+		isLookingDisabled = isDisabled
+	EndIf
+
+	If (control == "menu")
+		isMenuDisabled = isDisabled
+	EndIf
+
+	If (control == "movement")
+		isMovementDisabled = isDisabled
+	EndIf
+
+	If (control == "sneaking")
+		isSneakingDisabled = isDisabled
+	EndIf
+
+	; Disable, or Enable, the specified control based on the provided state.
+	If (isDisabled)
+		DisablePlayerControls(isMovementDisabled, isFightingDisabled, \
+		isCamSwitchDisabled, isLookingDisabled, isSneakingDisabled, \
+		isMenuDisabled, isActivateDisabled, isJournalDisabled)
+	Else
+		EnablePlayerControls(!isMovementDisabled, !isFightingDisabled, \
+		!isCamSwitchDisabled, !isLookingDisabled, !isSneakingDisabled, \
+		!isMenuDisabled, !isActivateDisabled, !isJournalDisabled)
+	EndIf
+EndFunction
+
 ; ver3ToString:
 ; -------------
-; Takes the provided string input in Major/Minor/Release versioning format, seperated by
+; Takes the provided string input in Major/Minor/Release versioning format, separated by
 ; commas ("X", "Y", "Z") and outputs it into a formatted string for displaying purposes.
 
 ; EXAMPLE USAGE:
@@ -108,7 +183,7 @@ EndFunction
 
 ; ver3ToInteger:
 ; --------------
-; Takes the provided string input in Major/Minor/Release versioning format, seperated by
+; Takes the provided string input in Major/Minor/Release versioning format, separated by
 ; commas ("X", "Y", "Z") and outputs it into a plain number integer for calculation purposes.
 
 ; EXAMPLE USAGE:
