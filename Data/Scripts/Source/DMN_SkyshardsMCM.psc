@@ -52,6 +52,7 @@ Message Property DMN_SkyshardsConfigMenuStatics Auto
 Message Property DMN_SkyshardsPerkPointDistribution Auto
 
 Event OnRead()
+	closeBookMenu()
 	; Check if the configurator version the player is running is up to date.
 	If (DMN_SC.skyshardsConfiguratorVersion != DMN_SC.skyshardsVersion)
 		; If it isn't, update it.

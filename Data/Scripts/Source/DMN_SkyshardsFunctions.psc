@@ -241,6 +241,13 @@ Function calculatePerkPoints(GlobalVariable countCurrent, GlobalVariable countCa
 	EndIf
 EndFunction
 
+; Closes the currently open book menu.
+Function closeBookMenu() Global
+	disableControl("menu")
+	Wait(0.1)
+	disableControl("menu", false)
+EndFunction
+
 Function updateQuestProgress(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName, Int skyshardsActivated, Int skyshardsTotal) Global
 	startQuestSafe(qstHelper) ; Start the helper quest to perform checks on.
 	Bool startQuest
