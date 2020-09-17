@@ -206,6 +206,12 @@ Function giveConfigurator(Book configurator) Global
 	EndIf
 EndFunction
 
+Function updateConfigurator(Int skyshardsVersion, Int skyshardsConfiguratorVersion, Book configurator, GlobalVariable gVar) Global
+	debugTrace(gVar, "Skyshards DEBUG: Updating the configurator from version " + skyshardsConfiguratorVersion + " to " + skyshardsVersion + ".")
+	giveConfigurator(configurator)
+	debugTrace(gVar, "Skyshards DEBUG: The configurator was updated to version " + skyshardsVersion + ".")
+EndFunction
+
 Function calculatePerkPoints(GlobalVariable countCurrent, GlobalVariable countCap, GlobalVariable perkPoints, Message msg, GlobalVariable gVar) Global
 	Int i = countCurrent.GetValue() as Int
 	Int j = countCap.GetValue() as Int

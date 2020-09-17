@@ -22,7 +22,10 @@ Import Debug
 Import Utility
 Import DMN_SkyshardsFunctions
 
+DMN_SkyshardsConfig Property DMN_SC Auto
 DMN_SkyshardsQuestData Property DMN_SQD Auto
+
+Book Property DMN_SkyshardsConfigurator Auto
 
 FormList Property DMN_SkyshardsAbsorbedStaticList Auto
 FormList Property DMN_SkyshardsBeaconList Auto
@@ -49,8 +52,19 @@ Message Property DMN_SkyshardsConfigMenuStatics Auto
 Message Property DMN_SkyshardsPerkPointDistribution Auto
 
 Event OnRead()
-	Wait(0.1)
-	configureMod()
+	; Check if the configurator version the player is running is up to date.
+	If (DMN_SC.skyshardsConfiguratorVersion != DMN_SC.skyshardsVersion)
+		; If it isn't, update it.
+		DMN_SC.checkConfigurator()
+		MessageBox("This configurator is outdated and has been removed in " + \
+		"order to update any scripts necessary for the configurator " + \
+		"options to function correctly. Please check your inventory for an " + \
+		"updated one.")
+	Else
+		; Otherwise continue with configuring the mod.
+		Wait(0.1)
+		configureMod()
+	EndIf
 EndEvent
 
 Function configureMod()
@@ -277,6 +291,11 @@ Function configureMod()
 				Notification("Skyshards: Successfully turned debug messages off!")
 			EndIf
 		ElseIf (choice04 == 3)
+			; Reset Configurator.
+				Wait(0.1)
+				giveConfigurator(DMN_SkyshardsConfigurator)
+				Notification("Skyshards: A new Skyshard configurator was placed in your inventory.")
+		ElseIf (choice04 == 4)
 		; Return To Main Config Menu.
 			GoToState("postConfig")
 			configureMod()

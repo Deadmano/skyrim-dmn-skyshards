@@ -50,6 +50,25 @@ String DMN_sSkyshardsVersionInstalled
 Int DMN_iSkyshardsVersionRunning
 String DMN_sSkyshardsVersionRunning
 
+; The version of the Skyshards script currently running accessable
+; by other scripts as a property.
+Int Property skyshardsVersion Hidden
+  Int Function get()
+    Return DMN_iSkyshardsVersionRunning
+  EndFunction
+EndProperty
+
+; User's Installed Configurator Script Version.
+Int DMN_iSkyshardsConfiguratorVersionInstalled
+
+; The version of the Skyshards configurator script installed on the player's
+; save accessable by other scripts as a property.
+Int Property skyshardsConfiguratorVersion Hidden
+	Int Function get()
+	  Return DMN_iSkyshardsConfiguratorVersionInstalled
+	EndFunction
+EndProperty
+
 ; The following store the amount of Skyshards
 ; that each version of the mod contains.
 Int DMN_iSkyshardsTotalCurrent
@@ -161,21 +180,32 @@ Message Property DMN_SkyshardsUpdateAnnouncementHandler Auto
 ; END Update Related Variables and Properties
 ;==============================================
 
+; The following will be run once per game load.
 Event OnInit()
 	preMaintenance() ; Function to run before the main script maintenance.
     Maintenance() ; Function to handle script maintenance.
 EndEvent
 
 Function preMaintenance()
-	Int i = 0
-
 ; Set the total Skyshards found values to the total of each DLC/Mod + base game.
 ; Skipped if an existing value is found. Used to correct v1.0.0 saves only.
+	Int i = 0
+
 	If (i == 0 && DMN_SkyshardsCountActivated.GetValue() as Int == 0)
 	i = (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int) + (DMN_SkyshardsDLC01CountActivated.GetValue() as Int)
 	DMN_SkyshardsCountActivated.SetValue(i as Int)
 	i = 0
 	EndIf
+
+	; Add support for tracking the configurator version to avoid issues where an
+	; outdated configurator won't have new properties. v1.5.0 saves or under.
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int <= 1500)
+		giveConfigurator(DMN_SkyshardsConfigurator)
+		DMN_iSkyshardsConfiguratorVersionInstalled = skyshardsVersion
+	EndIf
+
+	; Check if the player's configurator is up to date.
+	checkConfigurator()
 EndFunction
  
 Function Maintenance()
@@ -553,13 +583,35 @@ EndFunction
 
 Function configurationDefaults()
 ; Add (or update) the mod configurator to the player inventory silently.
+; Runs once per install or update.
 	giveConfigurator(DMN_SkyshardsConfigurator)
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Gave the player the latest Skyshards Configurator!")
-	
+
 ; Disable the Skyshard map markers if players have not previously chosen to display them.
 	If (DMN_SkyshardsShowMapMarkers.GetValue() != 1)
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Disabling Skyshard map markers...")
 		showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Skyshard map markers have been disabled!")
+	EndIf
+EndFunction
+
+Function checkConfigurator()
+; Check to see if the mod configurator given to the player matches the Skyshards
+; script version running. This is done to ensure any newly added properties to
+; the configurator are accessible.
+	If (skyshardsConfiguratorVersion != skyshardsVersion)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Detected " + \
+		"an older version of the configurator! Replacing it with the " + \
+		"latest one...")
+	; If the configurator is outdated, give the player a new one.
+		updateConfigurator(skyshardsVersion, skyshardsConfiguratorVersion, \
+		DMN_SkyshardsConfigurator, DMN_SkyshardsDebug)
+	; Then update the installed configurator version for future comparisons.
+		DMN_iSkyshardsConfiguratorVersionInstalled = skyshardsVersion
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The " + \
+		"configurator was updated to the latest version!")
+	ElseIf (skyshardsConfiguratorVersion == skyshardsVersion)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The " + \
+		"configurator is up to date.")
 	EndIf
 EndFunction
