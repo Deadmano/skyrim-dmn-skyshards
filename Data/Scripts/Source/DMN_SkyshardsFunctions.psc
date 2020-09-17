@@ -192,6 +192,13 @@ Int Function checkSkyshardQuestAlias(Quest qst)
 	Return j ; The amount of Skyshards absorbed, to update quest objectives.
 EndFunction
 
+; Returns the amount of configurators the player has in their inventory.
+Int Function getConfiguratorCount(Book configurator) Global
+	Actor player = GetPlayer()
+	Int configuratorCount = player.GetItemCount(configurator)
+	Return configuratorCount
+EndFunction
+
 Function giveConfigurator(Book configurator) Global
 ; Save the amount of configurators the player has in their inventory.
 	Actor ref = GetPlayer()
@@ -203,6 +210,15 @@ Function giveConfigurator(Book configurator) Global
 ; Else remove every configurator in the player inventory and add one, silently.
 		ref.RemoveItem(configurator, i, True)
 		ref.AddItem(configurator, 1, True)
+	EndIf
+EndFunction
+
+; Returns whether a player has any configurators in their inventory.
+Bool Function hasConfigurator(Book configurator) Global
+	If (getConfiguratorCount(configurator) >= 1)
+		Return True
+	Else
+		Return False
 	EndIf
 EndFunction
 

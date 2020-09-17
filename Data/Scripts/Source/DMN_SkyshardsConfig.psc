@@ -596,6 +596,14 @@ Function configurationDefaults()
 EndFunction
 
 Function checkConfigurator()
+; Check to see if the player has a configurator in their inventory.
+	If (!hasConfigurator(DMN_SkyshardsConfigurator))
+	; If they don't, give them one.
+		giveConfigurator(DMN_SkyshardsConfigurator)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Did not " + \
+		"detect a configurator. Gave the player a new one.")
+	EndIf
+
 ; Check to see if the mod configurator given to the player matches the Skyshards
 ; script version running. This is done to ensure any newly added properties to
 ; the configurator are accessible.
