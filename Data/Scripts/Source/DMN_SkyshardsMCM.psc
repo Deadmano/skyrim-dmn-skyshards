@@ -51,6 +51,20 @@ Message Property DMN_SkyshardsConfigMenuQuestSystem Auto
 Message Property DMN_SkyshardsConfigMenuStatics Auto
 Message Property DMN_SkyshardsPerkPointDistribution Auto
 
+Event OnActivate(ObjectReference actor)
+	; If the player activates a configurator that was not in their inventory,
+	; then disable it, show the player a message, and then destroy it.
+	Self.Disable()
+	closeBookMenu()
+	MessageBox("To prevent outdated property and/or script issues, and to " + \
+	"ensure proper mod operation, this configurator used directly from the " + \
+	"world was deleted. In the future please use the configurator that is " + \
+	"in your inventory directly.")
+	Self.Delete()
+	; Afterwards, check if a new configurator needs to be given.
+	DMN_SC.checkConfigurator()
+EndEvent
+
 Event OnRead()
 	closeBookMenu()
 	; Check if the configurator version the player is running is up to date.
