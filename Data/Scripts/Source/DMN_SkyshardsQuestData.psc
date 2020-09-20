@@ -46,13 +46,15 @@ Function updateSideQuests()
 	; Runs only if we are using the Full quest system.
 	If (DMN_SkyshardsQuestSystem.GetValue() as Int == 1)
 		Int i = holdQuest.Length
-		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Updating quest progress...")
+		debugNotificationAndTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
+		"Updating quest progress...")
 		While (i)
 			i -= 1
 		; Start the quest safely, update Skyshard activated/total counts as well as set/update quest objectives and stages.
 			updateQuestProgress(holdQuest[i], holdQuestHelper[i], DMN_SkyshardsDebug, holdName[i], skyshardsActivated[i], skyshardsTotal[i])
 		EndWhile
-		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Quest progress has been updated successfully!")
+		debugNotificationAndTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
+		"Quest progress has been updated successfully!")
 	EndIf
 EndFunction
 
