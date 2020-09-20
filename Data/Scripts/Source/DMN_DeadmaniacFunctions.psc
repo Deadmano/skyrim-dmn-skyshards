@@ -19,11 +19,14 @@ ScriptName DMN_DeadmaniacFunctions
 to enhance Papyrus scripting.}
 
 ;============================================
-; Version: 0.5.0
-; Updated: 2020/09/17
+; Version: 0.6.0
+; Updated: 2020/09/20
 ;--------------------
 ; VERSION HISTORY:
 ;====================
+; 0.6.0 | 2020/09/20
+;	+Added debugNotificationAndTrace.
+;
 ; 0.5.0 | 2020/09/17
 ;	+Added disableControl.
 ;
@@ -49,6 +52,7 @@ to enhance Papyrus scripting.}
 ; FUNCTIONS:
 ;	[debugNotification]: Takes a [GlobalVariable] which handles if the debug notifications are shown and a [String] that displays the notification message.
 ; 	[debugTrace]: Takes a [GlobalVariable] which handles if the debug trace messages are shown and a [String] that displays the trace message. Supports optional severity levels.
+;	[debugNotificationAndTrace]: Provides debug notification and trace messages.
 ;   [disableControl]: Enable or disable a specified player game control at will.
 ;	[round]: Takes a [Float] value and rounds it to the nearest whole [Integer].
 ; 	[updateAliasRef]: Takes the provided [Alias] reference from the specified [Quest] and performs an action on it for each matching reference the alias fills.
@@ -92,6 +96,30 @@ EndFunction
 Function debugTrace(GlobalVariable gDebugVariable, String sDebugMessage, Int iSeverity = 0) Global
 	If (gDebugVariable.GetValue() == 1)
 		Wait(0.1)
+		Trace(sDebugMessage, iSeverity)
+	EndIf
+EndFunction
+
+; debugNotificationAndTrace
+; ---
+; Combines the debugNotification and debugTrace functions for situations where
+; you wish to use both lessening repetition in the message. The provided
+; GlobalVariable dictates whether the message is shown and logged.
+; ---
+; EXAMPLE USAGE:
+; GlobalVariable Property gDebugVariable Auto ; The debug state GlobalVariable.
+; debugNotificationAndTrace(gDebugVariable, "This is a test.", 1)
+; ---
+; OUTPUT:
+; "This is a test." which is shown as a warning in the log file, and as a
+; regular notification in-game.
+; ---
+; SEVERITY LEVELS:
+; (optional): 0: Info (default). 1: Warning. 2: Error.
+Function debugNotificationAndTrace(GlobalVariable gDebugVariable, String sDebugMessage, Int iSeverity = 0) Global
+	If (gDebugVariable.GetValue() == 1)
+		Wait(0.1)
+		Notification(sDebugMessage)
 		Trace(sDebugMessage, iSeverity)
 	EndIf
 EndFunction
