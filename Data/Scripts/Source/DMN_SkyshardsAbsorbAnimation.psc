@@ -21,6 +21,9 @@ Import Debug
 Import Game
 Import Utility
 
+DMN_SkyshardsConfig Property DMN_SC Auto
+{Auto-Fill.}
+
 Actor Property PlayerREF Auto
 EffectShader Property DMN_SkyshardsAbsorbingFX Auto
 {Auto-Fill.}
@@ -34,7 +37,12 @@ Event OnActivate(ObjectReference AbsorbActor)
 	; Plays the absorbing visual effect on the player.
 		DMN_SkyshardsAbsorbingFX.Play(AbsorbActor)
 		DisablePlayerControls(1,1,1,0,1,1,1,1,0) ; 1 = enabled, 0 = disabled: Movement, Combat, POV Switch, Looking, Sneaking, Menu, Activation, Journal Tabs, DisablePOVType (0 = Script).
-		SetGodMode(True)
+		Debug.Trace("God Mode State BEFORE: " + DMN_SC.DMN_SkyshardsPersistGodMode.GetValue())
+		If (DMN_SC.DMN_SkyshardsPersistGodMode.GetValue() as Int == 0)
+			Debug.Notification("Enabling God Mode!")
+			Debug.Trace("God Mode State BEFORE: " + DMN_SC.DMN_SkyshardsPersistGodMode)
+			SetGodMode(True)
+		EndIf
 		SendAnimationEvent(AbsorbActor, "RitualSpellStart")
 		Wait(2.0)
 	EndIf
@@ -50,7 +58,12 @@ Event OnActivate(ObjectReference AbsorbActor)
 		DMN_SkyshardsAbsorbingFX.Stop(AbsorbActor)
 		DMN_SkyshardsAbsorbedVFX.Stop(AbsorbActor)
 		SendAnimationEvent(AbsorbActor, "Ritualspellout")
-		SetGodMode(False)
+		If (DMN_SC.DMN_SkyshardsPersistGodMode.GetValue() as Int == 0)
+			Debug.Notification("Disabling God Mode!")
+			Debug.Trace("God Mode State AFTER: " + DMN_SC.DMN_SkyshardsPersistGodMode)
+			SetGodMode(False)
+		EndIf
+		Debug.Trace("God Mode State AFTER: " + DMN_SC.DMN_SkyshardsPersistGodMode.GetValue())
 		EnablePlayerControls()
 		Notification("I feel the power of the Skyshard coursing through me as I absorb it!")
 	EndIf

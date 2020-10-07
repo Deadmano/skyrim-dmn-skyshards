@@ -162,6 +162,9 @@ Message Property DMN_SkyshardsUpdateAnnouncement_v1_5_0 Auto
 FormList Property DMN_SkyshardsBeaconList Auto
 {Stores all the Skyshard beacons. Auto-Fill.}
 
+GlobalVariable Property DMN_SkyshardsPersistGodMode Auto
+{Stores whether god mode is persisted after Skyshard activation. Auto-Fill.}
+
 GlobalVariable Property DMN_SkyshardsShowBeacons Auto
 {Stores whether beacons are enabled or disabled. Auto-Fill.}
 

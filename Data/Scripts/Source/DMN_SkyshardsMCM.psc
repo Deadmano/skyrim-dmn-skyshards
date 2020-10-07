@@ -36,6 +36,7 @@ GlobalVariable Property DMN_SkyshardsCountCap Auto
 GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
+GlobalVariable Property DMN_SkyshardsPersistGodMode Auto
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
 GlobalVariable Property DMN_SkyshardsShowBeacons Auto
 GlobalVariable Property DMN_SkyshardsShowMapMarkers Auto
@@ -291,7 +292,29 @@ Function configureMod()
 				GoToState("postConfig")
 				configureMod()
 			EndIf
+	; Persist God Mode.
 		ElseIf (choice04 == 2)
+			Wait(0.1)
+			If (DMN_SkyshardsPersistGodMode.GetValue() as Int == 0)
+				Notification("Skyshards: Persisting god mode state...")
+				DMN_SkyshardsPersistGodMode.SetValue(1 as Int)
+				Wait(0.1)
+				Notification("Skyshards: Successfully persisted god mode!")
+			EndIf
+			GoToState("postConfig")
+			configureMod()
+	; Unpersist God Mode.
+		ElseIf (choice04 == 3)
+			Wait(0.1)
+			If (DMN_SkyshardsPersistGodMode.GetValue() as Int == 1)
+				Notification("Skyshards: Unpersisting god mode...")
+				DMN_SkyshardsPersistGodMode.SetValue(0 as Int)
+				Wait(0.1)
+				Notification("Skyshards: Successfully unpersisted god mode!")
+			EndIf
+			GoToState("postConfig")
+			configureMod()
+		ElseIf (choice04 == 4)
 		; Toggle Debugging.
 			Wait(0.1)
 			If (DMN_SkyshardsDebug.GetValue() as Int == 0)
@@ -305,12 +328,12 @@ Function configureMod()
 				Wait(0.1)
 				Notification("Skyshards: Successfully turned debug messages off!")
 			EndIf
-		ElseIf (choice04 == 3)
+		ElseIf (choice04 == 5)
 			; Reset Configurator.
 				Wait(0.1)
 				giveConfigurator(DMN_SkyshardsConfigurator)
 				Notification("Skyshards: A new Skyshard configurator was placed in your inventory.")
-		ElseIf (choice04 == 4)
+		ElseIf (choice04 == 6)
 		; Return To Main Config Menu.
 			GoToState("postConfig")
 			configureMod()
