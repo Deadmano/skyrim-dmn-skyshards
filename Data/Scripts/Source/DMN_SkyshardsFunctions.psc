@@ -103,15 +103,18 @@ Function showSkyshardStatics(FormList staticList, Bool toggleState) Global
 	While (i) ; Stop looping if we can't find a Skyshard Static in our FormList.
 		i -= 1
 		ObjectReference ref = staticList.GetAt(i) as ObjectReference
-	; Disable found references that are enabled.
-		If (toggleState == False)
-			If (ref.IsEnabled())
-				ref.Disable(True)
-			EndIf
-	; Enable found references that are enabled.
-		ElseIf (toggleState == True)
-			If (ref.IsDisabled())
-				ref.Enable(True)
+	; Ensure our reference is a Skyshard Static in our FormList.
+		If (staticList.GetAt(i) == ref)
+		; Disable found references that are enabled.
+			If (toggleState == False)
+				If (ref.IsEnabled())
+					ref.Disable(True)
+				EndIf
+		; Enable found references that are enabled.
+			ElseIf (toggleState == True)
+				If (ref.IsDisabled())
+					ref.Enable(True)
+				EndIf
 			EndIf
 		EndIf
 	EndWhile
