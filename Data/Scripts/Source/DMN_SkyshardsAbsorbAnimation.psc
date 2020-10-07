@@ -14,12 +14,14 @@
 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ScriptName DMN_SkyshardsAbsorbAnimation Extends ObjectReference  
-{Adds an animation sequence to the Skyshard activaton.}
-; Credit goes to Dragon Soul Absorb More Glorious (DSAMG) for the ritual animation script.
+{Adds an animation sequence to the Skyshard activation.}
+; Credit goes to Dragon Soul Absorb More Glorious (DSAMG) for the ritual
+; animation script.
 
 Import Debug
 Import Game
 Import Utility
+Import DMN_DeadmaniacFunctions
 
 DMN_SkyshardsConfig Property DMN_SC Auto
 {Auto-Fill.}
@@ -36,11 +38,10 @@ Event OnActivate(ObjectReference AbsorbActor)
 		DMN_SkyshardsAbsorbedVFX.Play(AbsorbActor)
 	; Plays the absorbing visual effect on the player.
 		DMN_SkyshardsAbsorbingFX.Play(AbsorbActor)
-		DisablePlayerControls(1,1,1,0,1,1,1,1,0) ; 1 = enabled, 0 = disabled: Movement, Combat, POV Switch, Looking, Sneaking, Menu, Activation, Journal Tabs, DisablePOVType (0 = Script).
-		Debug.Trace("God Mode State BEFORE: " + DMN_SC.DMN_SkyshardsPersistGodMode.GetValue())
+		; Disable any combat the player may be in as well as their movement.
+		disableControl("fighting")
+		disableControl("movement")
 		If (DMN_SC.DMN_SkyshardsPersistGodMode.GetValue() as Int == 0)
-			Debug.Notification("Enabling God Mode!")
-			Debug.Trace("God Mode State BEFORE: " + DMN_SC.DMN_SkyshardsPersistGodMode)
 			SetGodMode(True)
 		EndIf
 		SendAnimationEvent(AbsorbActor, "RitualSpellStart")
@@ -59,12 +60,12 @@ Event OnActivate(ObjectReference AbsorbActor)
 		DMN_SkyshardsAbsorbedVFX.Stop(AbsorbActor)
 		SendAnimationEvent(AbsorbActor, "Ritualspellout")
 		If (DMN_SC.DMN_SkyshardsPersistGodMode.GetValue() as Int == 0)
-			Debug.Notification("Disabling God Mode!")
-			Debug.Trace("God Mode State AFTER: " + DMN_SC.DMN_SkyshardsPersistGodMode)
 			SetGodMode(False)
 		EndIf
-		Debug.Trace("God Mode State AFTER: " + DMN_SC.DMN_SkyshardsPersistGodMode.GetValue())
-		EnablePlayerControls()
-		Notification("I feel the power of the Skyshard coursing through me as I absorb it!")
+		; Resume any combat the player may be in and enable their movement.
+		disableControl("fighting", False)
+		disableControl("movement", False)
+		Notification("I feel the power of the Skyshard coursing through me " \
+		+ "as I absorb it!")
 	EndIf
 EndEvent
