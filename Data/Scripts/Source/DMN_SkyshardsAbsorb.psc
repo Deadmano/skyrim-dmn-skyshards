@@ -124,22 +124,45 @@ Auto State Absorbing
 				; DMN_SQN.startMainQuest("Dawnguard")
 			EndIf
 			
-		; Show the abosrb message once we've allocated the Skyshard counters
+		; Show the absorb message once we've allocated the Skyshard counters
 		; AND if the user has chosen not to opt out of point distribution.
 			If (DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
 				DMN_SkyshardAbsorbedMessage.Show()
 			EndIf
 
-		; Check if we reach the specified Skyshards cap to give perk points and
-		; ensure that the user has not chosen to opt out of point distribution.
-			If (DMN_SkyshardsCountCurrent.GetValue() as Int == DMN_SkyshardsCountCap.GetValue() as Int && \
-			DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
-				AddPerkPoints(DMN_SkyshardsPerkPoints.GetValue() as Int)
-				DMN_SkyshardsCountCurrent.SetValue(0 as Int)
-				Notification("Skyshards: I have absorbed enough Skyshards to advance my skills!")
+		; Get the value of the global variables for later use.
+			Int absorbedSkyshards = DMN_SkyshardsCountCurrent.GetValue() as Int
+			Int absorbCap = DMN_SkyshardsCountCap.GetValue() as Int
+			Int perkPointsGiven = DMN_SkyshardsPerkPoints.GetValue() as Int
+
+		; Catch any overflows/incorrect values and reset them to defaults.
+			If (absorbedSkyshards < 0)
+				absorbedSkyshards = 0
+				DMN_SkyshardsCountCurrent.SetValue(0)
+			EndIf
+			If (absorbCap < 0)
+				absorbCap = 3
+				DMN_SkyshardsCountCap.SetValue(3)
+			EndIf
+			If (perkPointsGiven < 0)
+				perkPointsGiven = 1
+				DMN_SkyshardsPerkPoints.SetValue(1)
+			EndIf
+
+			; So long as we have enough absorbed Skyshards, give perk points.
+			If (absorbedSkyshards >= absorbCap && perkPointsGiven != 0)
+			While (absorbedSkyshards >= absorbCap)
+				AddPerkPoints(perkPointsGiven)
+				absorbedSkyshards = absorbedSkyshards - absorbCap
+				DMN_SkyshardsCountCurrent.SetValue(absorbedSkyshards)
+			EndWhile
+			Notification("Skyshards: I have absorbed enough Skyshards to " + \
+			" advance my skills!")
 		; Else the user had turned off perk point distribution at some point.
 			Else
-				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Perk point distribution is disabled. Skipping perk point allocation.")
+				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
+				"Perk point distribution is disabled. Skipping perk point " + \
+				"allocation.")
 			EndIf
 			
 		; Update the global variable values for the tracking quests and check for main quest progression.
