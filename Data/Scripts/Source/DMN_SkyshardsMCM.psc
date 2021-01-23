@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ Function configureMod()
 			Wait(0.1)
 			Notification("Skyshards: Switching to the Full Quest System...")
 			DMN_SkyshardsQuestSystem.SetValue(1 as Int)
-			DMN_SQD.updateSideQuests()
+			DMN_SQD.startSideQuests()
 			Wait(0.1)
 			Notification("Skyshards: Successfully switched to the Full Quest System!")
 		ElseIf (choice03 == 1)

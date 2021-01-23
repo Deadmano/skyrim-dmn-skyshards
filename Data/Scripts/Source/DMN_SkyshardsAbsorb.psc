@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -83,11 +83,6 @@ Auto State Absorbing
 		If (WhoDaresTouchMe == PlayerRef)
 		; Ensure we don't run the script multiple times per Skyshard activation.
 			GotoState("KochBlock")
-
-		; Update global variables.
-			DMN_SkyshardsCountCurrent.Mod(1 as Int)
-			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
-			DMN_SkyshardsCountActivated.Mod(1 as Int)
 			
 		; Add this Skyshard to a FormList so we know it was activated.
 			DMN_SkyshardsAbsorbedList.AddForm(Self)
@@ -101,6 +96,16 @@ Auto State Absorbing
 			DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Skyshard Static to a FormList for future use.
 			Wait(1)
 			Disable(True) ; Disable the Skyshard Activator WITH a fade-out.
+
+		; Update global variables. Must be done first so that the below quests are able
+		; to identify the Skyshard and update correctly.
+			DMN_SkyshardsCountCurrent.Mod(1 as Int)
+			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
+			DMN_SkyshardsCountActivated.Mod(1 as Int)
+
+		; Begin the process of updating the quests.
+			DMN_SQD.beginQuestUpdates(DMN_SkyshardsActivatedCounter)
+
 		; Remove the Skyshard Beacon from the beacon list managed by the MCM, if it exists.
 			If DMN_SkyshardsBeaconListMCM.HasForm(GetLinkedRef())
 				DMN_SkyshardsBeaconListMCM.RemoveAddedForm(GetLinkedRef())
@@ -108,32 +113,19 @@ Auto State Absorbing
 			EndIf
 			Wait(2)
 			GetLinkedRef().Disable(True) ; Disable the Skyshard Beacon with a fade-out.
-			
-		; Check if the Skyshard activated is from Skyrim.
-			If (DMN_SkyshardsActivatedCounter == DMN_SkyshardsSkyrimCountActivated)
-				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a Skyrim Skyshard!")
-
-			; Check if the Skyshards in Skyrim quest is running, and if it is not then start it.
-				DMN_SQN.startMainQuest("Skyrim")
-
-		; Check if the Skyshard activated is from DLC01 (Dawnguard).
-			ElseIf (DMN_SkyshardsActivatedCounter == DMN_SkyshardsDLC01CountActivated)
-				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You activated a Dawnguard Skyshard!")
-				
-			; Add DLC01 start quest here.
-				; DMN_SQN.startMainQuest("Dawnguard")
-			EndIf
-			
-		; Show the absorb message once we've allocated the Skyshard counters
-		; AND if the user has chosen not to opt out of point distribution.
-			If (DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
-				DMN_SkyshardAbsorbedMessage.Show()
-			EndIf
 
 		; Get the value of the global variables for later use.
 			Int absorbedSkyshards = DMN_SkyshardsCountCurrent.GetValue() as Int
 			Int absorbCap = DMN_SkyshardsCountCap.GetValue() as Int
 			Int perkPointsGiven = DMN_SkyshardsPerkPoints.GetValue() as Int
+
+		; Show the absorb message once we've allocated the Skyshard counters
+		; AND if the user has chosen not to opt out of point distribution.
+		If (DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
+			; DMN_SkyshardAbsorbedMessage.Show()
+			Notification("Skyshard absorbed! Pieces collected: " + \
+			absorbedSkyshards + "/" + absorbCap + ".")
+		EndIf
 
 		; Catch any overflows/incorrect values and reset them to defaults.
 			If (absorbedSkyshards < 0)

@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -265,44 +265,6 @@ Function closeBookMenu() Global
 	disableControl("menu")
 	Wait(0.1)
 	disableControl("menu", false)
-EndFunction
-
-Function updateQuestProgress(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName, Int skyshardsActivated, Int skyshardsTotal) Global
-	startQuestSafe(qstHelper) ; Start the helper quest to perform checks on.
-	Bool startQuest
-	Int i = 0
-	Int j
-	Int k
-	Int l = 0
-	While (qstHelper.GetAlias(i)) ; Loop through each alias attached to the helper quest. 
-		ObjectReference ref = getQuestAlias(qstHelper, i)
-	 ; If we find a reference that exists and is disabled, do the following...
-		If (ref && ref.IsDisabled())
-			k += 1
-			startQuest = True
-		 ; If we found a valid reference and the quest isn't running, do the following...
-			If (startQuest && !qst.IsRunning())
-				startQuestSafeSetStage(qst) ; Start the quest up and set its initial stage.
-			EndIf
-		EndIf
-		i += 1
-	EndWhile
-	While (qstHelper.GetAlias(l)) ; Loop through each alias attached to the helper quest.
-		ObjectReference ref = getQuestAlias(qstHelper, l)
-		If (qst.IsRunning()) ; So long as the quest is running, do the following...
-		; Set and display the objective for each Skyshard.
-			setQuestObjectiveDisplayed(ref, qst, l, j, gVar, holdName)
-		; Mark specific objectives as complete for any found Skyshards.
-			setQuestObjectiveCompleted(ref, qst, l, j, gVar, holdName)
-		EndIf
-		l += 1
-	EndWhile
-	startQuest = False
-	skyshardsActivated = k ; The value of activated Skyshards, based on each reference found that is disabled.
-	skyshardsTotal = i ; The total value of Skyshards, based on each reference found.
-	debugTrace(gVar, "Skyshards DEBUG: The amount of " + holdName + " Skyshards found: " + skyshardsActivated + "/" + skyshardsTotal)
-	setQuestStage(qst, k, gVar, holdName)
-	stopQuestSafe(qstHelper)
 EndFunction
 
 Function hideQuestObjective(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName) Global

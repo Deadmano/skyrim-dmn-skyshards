@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -345,7 +345,7 @@ Function updateSkyshards()
 	; Start the main quest up to start tracking existing Skyshards and future ones as well.
 		DMN_SQN.startMainQuest("Skyrim")
 	; Update the quest progress of all previously found Skyshards.
-		DMN_SQD.updateSideQuests()
+		DMN_SQD.startSideQuests()
 	EndIf
 ; END v1.0.0 FIXES/PATCHES
 
@@ -568,10 +568,13 @@ Function updateSkyshards()
 
 ; Update the global variable values on the main quests.
 	DMN_SQN.updateGlobals()
-; Update all activated side quest objectives with any new Skyshards added since the last update.
-	DMN_SQD.updateSideQuests()
+
 ; Check main quest progression to update stages and objectives as needed.
 	DMN_SQN.updateMainQuests(True)
+
+; Update all activated side quest objectives with any new
+; Skyshards added since the last update.
+	DMN_SQD.startSideQuests()
 
 ; Updates the user's installed Skyshards version to this running version of Skyshards.
 	DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.
@@ -588,6 +591,8 @@ Function configurationDefaults()
 ; Add (or update) the mod configurator to the player inventory silently.
 ; Runs once per install or update.
 	giveConfigurator(DMN_SkyshardsConfigurator)
+; Update the installed configurator version for future comparisons.
+	DMN_iSkyshardsConfiguratorVersionInstalled = skyshardsVersion
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Gave the player the latest Skyshards Configurator!")
 
 ; Disable the Skyshard map markers if players have not previously chosen to display them.

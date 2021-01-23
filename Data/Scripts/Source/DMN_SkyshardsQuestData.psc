@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -20,41 +20,106 @@ quest data and variables.
 
 Import Debug
 Import Game
+Import Utility
 Import DMN_DeadmaniacFunctions
 Import DMN_SkyshardsFunctions
+
+DMN_SkyshardsQuest Property DMN_SQN Auto
+DMN_SkyshardsQuestHelper Property DMN_SQH Auto
+DMN_SkyshardsQuestManager Property DMN_SQM Auto
 
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable. Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
 {Controls which quest system is used. 1 for Full (default), 0 for Lite. Auto-Fill.}
 
+Quest Property helperQuest Auto
+{Set to the helper quest manually. Does not auto-fill.}
+
 ; Ensure the indexes match up. e.g: DMN_SkyshardsSkyrimWhiterun and
 ; DMN_SkyshardsSkyrimWhiterunHelper both on index 7 of the array.
-; Else you will have the incorrect values for each quest. 
+; Else you will have the incorrect values for each quest.
 Quest[] Property holdQuest Auto
 {The list of all Skyshard hold quests.}
 Quest[] Property holdQuestHelper Auto
 {The list of all Skyshard hold quest helpers.}
 Int[] Property skyshardsActivated Auto
 {The list of activated Skyshard counts.}
+GlobalVariable[] Property skyshardsCounterList Auto
+{The list of all Skyshard counters.}
 Int[] Property skyshardsTotal Auto
 {The list of total Skyshard counts.}
 String[] Property holdName Auto
 {The name of the hold the Skyshards are found in.}
 
-Function updateSideQuests()
-	; Runs only if we are using the Full quest system.
+GlobalVariable currentAbsorbedSkyshard
+
+GlobalVariable Property currentSkyshard Hidden
+	GlobalVariable Function get()
+		Return currentAbsorbedSkyshard
+	  EndFunction
+EndProperty
+
+Bool isUpdateNeeded
+
+Bool Property updateStatus Hidden
+	Bool Function get()
+		Return isUpdateNeeded
+	  EndFunction
+EndProperty
+
+; Starts the helper quest that is responsible for updating all main
+; and side quests as well as performing any needed maintenance.
+Function beginQuestUpdates(GlobalVariable skyshardCounter)
+	Int i = skyshardsCounterList.Length
+	While(i)
+		i -= 1
+		If (skyshardCounter == skyshardsCounterList[i])
+			currentAbsorbedSkyshard = skyshardsCounterList[i]
+			helperQuest.Stop()
+			helperQuest.Start()
+		EndIf
+	EndWhile
+EndFunction
+
+Function disableUpdating()
+; We no longer need to update the quests, so disable updating.
+	isUpdateNeeded = False	
+EndFunction
+
+; Ensures all the helper quests responsible for the side quests are started.
+Function startSideQuests()
+; Runs only if we are using the Full quest system.
 	If (DMN_SkyshardsQuestSystem.GetValue() as Int == 1)
+		; Log the time the function started running.
+		Float fStart = GetCurrentRealTime()
+		; Log the time the function stopped running.
+		Float fStop
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: [Started " + \
+		"startSideQuests Function]")
+
+	; Flag this as an update to avoid helper quests running on game load.
+	; This ensures that the quests only update when we want them to.
+		isUpdateNeeded = True
+
 		Int i = holdQuest.Length
-		debugNotificationAndTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
-		"Updating quest progress...")
 		While (i)
+		; Loop through all hold quests helpers to stop and start them,
+		; triggering their own update functions. This is done
+		; to handle the updates asynchronously, speeding up checking.
 			i -= 1
-		; Start the quest safely, update Skyshard activated/total counts as well as set/update quest objectives and stages.
-			updateQuestProgress(holdQuest[i], holdQuestHelper[i], DMN_SkyshardsDebug, holdName[i], skyshardsActivated[i], skyshardsTotal[i])
+			holdQuestHelper[i].Stop()
+			holdQuestHelper[i].Start()
 		EndWhile
-		debugNotificationAndTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
-		"Quest progress has been updated successfully!")
+
+	; Clear the specified Skyshard as we are done with it.
+		currentAbsorbedSkyshard = None
+
+		fStop = GetCurrentRealTime()
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: startSideQuests " + \
+		"function took " + (fStop - fStart) + " seconds to complete.")
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: [Ended " + \
+		"startSideQuests Function]\n\n")
 	EndIf
 EndFunction
 
