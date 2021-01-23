@@ -156,15 +156,6 @@ Auto State Absorbing
 				"Perk point distribution is disabled. Skipping perk point " + \
 				"allocation.")
 			EndIf
-			
-		; Update the global variable values for the tracking quests and check for main quest progression.
-			DMN_SQN.updateGlobals()
-			DMN_SQN.updateMainQuests()
-			
-		; Update the relevant Skyshards side-quest to take into account this absorbed Skyshard.
-			DMN_SQD.updateSideQuests()
-			
-			DMN_SQN.updateMainQuests(True) ; Finalise parameter set to true to complete main quests if requirements are met.
 		EndIf
 	EndEvent
 EndState
