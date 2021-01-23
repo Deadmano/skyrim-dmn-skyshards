@@ -137,11 +137,11 @@ Auto State Absorbing
 				DMN_SkyshardsCountCap.SetValue(3)
 			EndIf
 			If (perkPointsGiven < 0)
-				perkPointsGiven = 1
-				DMN_SkyshardsPerkPoints.SetValue(1)
+				perkPointsGiven = 0
+				DMN_SkyshardsPerkPoints.SetValue(0)
 			EndIf
 
-			; So long as we have enough absorbed Skyshards, give perk points.
+		; So long as we have enough absorbed Skyshards, give perk points.
 			If (absorbedSkyshards >= absorbCap && perkPointsGiven != 0)
 			While (absorbedSkyshards >= absorbCap)
 				AddPerkPoints(perkPointsGiven)
@@ -151,7 +151,7 @@ Auto State Absorbing
 			Notification("Skyshards: I have absorbed enough Skyshards to " + \
 			" advance my skills!")
 		; Else the user had turned off perk point distribution at some point.
-			Else
+			ElseIf(perkPointsGiven == 0)
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
 				"Perk point distribution is disabled. Skipping perk point " + \
 				"allocation.")
