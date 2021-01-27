@@ -23,6 +23,10 @@ DMN_SkyshardsQuest Property DMN_SQN Auto
 DMN_SkyshardsQuestData Property DMN_SQD Auto
 DMN_SkyshardsQuestManager Property DMN_SQM Auto
 
+GlobalVariable Property DMN_SkyshardsCountActivated Auto
+{Auto-Fill.}
+GlobalVariable Property DMN_SkyshardsCountTotal Auto
+{Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsSkyrimCountActivated Auto
@@ -31,8 +35,16 @@ GlobalVariable Property DMN_SkyshardsDLC01CountActivated Auto
 {Auto-Fill.}
 
 Event OnInit()
-	If (DMN_SQD.currentSkyshard)
+	If (DMN_SQD.currentSkyshard && \
+		DMN_SkyshardsCountActivated.GetValue() as Int \
+		<= DMN_SkyshardsCountTotal.GetValue() as Int)
 		updateQuests()
+	Else
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: The quest system " + \
+	"has run into some kind of internal issue. The amount of Skyshards " + \
+	"activated by the player is " + DMN_SkyshardsCountActivated.GetValue() + \
+	" of the " + DMN_SkyshardsCountTotal.GetValue() + " that exist in " + \
+	"the game and/or DLCs.")
 	EndIf
 EndEvent
 
@@ -105,10 +117,6 @@ Function updateQuests()
 
 ; Check for main quest progression.
 	DMN_SQN.updateMainQuests()
-
-; Finalise parameter set to true to complete main quests if
-; requirements are met.
-	DMN_SQN.updateMainQuests(True)
 
 ; Once all updates have been performed, flag the data quest so that
 ; helper quests do not randomly fire off during game loads. 

@@ -278,7 +278,7 @@ Function hideQuestObjective(Quest qst, Quest qstHelper, GlobalVariable gVar, Str
 			j = 10 * (1+i)
 			If (qst.IsObjectiveDisplayed(j))
 			; Hide the quest objective that is displayed.
-				qst.SetObjectiveDisplayed(j, False, True)
+				qst.SetObjectiveDisplayed(j, False, False)
 				debugTrace(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + j + ") to hidden.")
 			EndIf
 		EndIf
@@ -342,4 +342,29 @@ Function setQuestStage(Quest qst, Int enum, GlobalVariable gVar, String holdName
 		qst.SetStage(enum)
 		debugTrace(gVar, "Skyshards DEBUG: Set " + holdName + " quest stage index to (" + enum + ").")
 	EndIf
+EndFunction
+
+Function setQuestStageFinal(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName) Global
+; Start the helper quest to perform checks on.
+	startQuestSafe(qstHelper)
+	Int i = 0
+; Loop through each alias attached to the helper quest. 
+	While (qstHelper.GetAlias(i))
+		ObjectReference ref = getQuestAlias(qstHelper, i)
+; If we find a reference that exists, do the following...
+		If (ref)
+		; Increment our counter by one that signifies each objective and stage.
+			i += 1
+		EndIf
+	EndWhile
+; To figure out which stage we should set the specific quest to for its final
+; stage we take the amount of objectives displayed and multiple it by 10
+; as we have it so that each new quest stage is 10 up from the last stage.
+	Int stage = 10 * i
+	If (qst.GetCurrentStageID() != stage)
+		qst.SetStage(stage)
+		debugTrace(gVar, "Skyshards DEBUG: Set " + holdName + " quest " + \
+		"stage index to (" + stage + ").")
+	EndIf
+	stopQuestSafe(qstHelper)
 EndFunction
