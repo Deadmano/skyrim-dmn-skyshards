@@ -173,25 +173,36 @@ Function configureMod()
 		Int choice03 = DMN_SkyshardsConfigMenuQuestSystem.Show()
 		If (choice03 == 0)
 		; Full Quest System.
-			Wait(0.1)
-			Notification("Skyshards: Switching to the Full Quest System...")
-			DMN_SkyshardsQuestSystem.SetValue(1 as Int)
-			DMN_SQD.startSideQuests()
-			DMN_SQD.disableUpdating()
-			DMN_SQD.updateMainQuests()
-			Wait(0.1)
-			Notification("Skyshards: Successfully switched to the Full " + \
-			"Quest System!")
+			If (DMN_SkyshardsQuestSystem.GetValue() as Int == 1)
+			; Skip switching the quest system if the choice is
+			; the same as the currently running quest system.
+				Notification("Skyshards: The full quest system is already " + \
+				"being used.")
+			Else
+				Wait(0.1)
+				Notification("Skyshards: Switching to the full quest system...")
+				DMN_SQD.switchQuestSystem(1)
+				Wait(0.1)
+				Notification("Skyshards: Successfully switched to the full " + \
+				"quest system!")
+			EndIf
 		ElseIf (choice03 == 1)
 		; Lite Quest System.
-			Wait(0.1)
-			Notification("Skyshards: Switching to the Lite Quest System...")
-			DMN_SQD.stopTrackingSideQuests()
-			DMN_SQD.stopTrackingMainQuests()
-			DMN_SkyshardsQuestSystem.SetValue(0 as Int)
-			Wait(0.1)
-			Notification("Skyshards: Successfully switched to the Lite " + \
-			"Quest System!")
+			If (DMN_SkyshardsQuestSystem.GetValue() as Int == 0)
+			; Skip switching the quest system if the choice is
+			; the same as the currently running quest system.
+				Notification("Skyshards: The lite quest system is already " + \
+				"being used.")
+				GoToState("postConfig")
+				configureMod()
+			Else
+				Wait(0.1)
+				Notification("Skyshards: Switching to the lite quest system...")
+				DMN_SQD.switchQuestSystem(0)
+				Wait(0.1)
+				Notification("Skyshards: Successfully switched to the lite " + \
+				"quest system!")
+			EndIf
 		ElseIf (choice03 == 2)
 		; Return To Main Config Menu.
 			GoToState("postConfig")

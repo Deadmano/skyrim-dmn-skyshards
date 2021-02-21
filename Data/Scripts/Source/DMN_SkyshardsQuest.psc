@@ -25,6 +25,10 @@ Import DMN_SkyshardsFunctions
 
 DMN_SkyshardsQuestData Property DMN_SQD Auto
 
+GlobalVariable Property DMN_SkyshardsComplete Auto
+{Whether or not all Skyshards have been found across all main quests.
+0 = there are Skyshards to be found, 1 = all have been found. Auto-Fill.}
+
 GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 {The current amount of Skyshards the player has activated throughout Skyrim and
 other DLCs/Mods which resets once it reaches DMN_SkyshardsCountCap. Auto-Fill.}
@@ -59,8 +63,14 @@ Quest Property DMN_SkyshardsSkyrim Auto
 Quest[] mainQuest
 ; Initialises an empty array to store all main quest names.
 String[] mainQuestName
+; Initialises an empty array to store all main quest current counter values.
+; Ensure the indexes match the other mainQuest arrays for comparisons.
+GlobalVariable[] mainQuestCounter
 ; Initialises an empty array to store all main quest globals.
 GlobalVariable[] mainQuestGlobal
+; Initialises an empty array to store all main quest total counter values.
+; Ensure the indexes match the other mainQuest arrays for comparisons.
+GlobalVariable[] mainQuestTotal
 
 Function buildArrays()
 	mainQuest = new Quest[2]
@@ -70,7 +80,15 @@ Function buildArrays()
 	mainQuestName = new String[2]
 	mainQuestName[0] = "Skyshards"
 	mainQuestName[1] = "Skyrim"
-	
+
+	mainQuestCounter = new GlobalVariable[2]
+	mainQuestCounter[0] = DMN_SkyshardsCountActivated
+	mainQuestCounter[1] = DMN_SkyshardsSkyrimCountActivated
+
+	mainQuestTotal = new GlobalVariable[2]
+	mainQuestTotal[0] = DMN_SkyshardsCountTotal
+	mainQuestTotal[1] = DMN_SkyshardsSkyrimCountTotal
+
 	mainQuestGlobal = new GlobalVariable[6]
 	mainQuestGlobal[0] = DMN_SkyshardsCountCurrent
 	mainQuestGlobal[1] = DMN_SkyshardsCountCap
@@ -111,12 +129,18 @@ Bool skyrimCompleted = False
 		"all the Skyshards in Skyrim! Marking quest as complete now.")
 	; Complete and hide the side quests.
 		DMN_SQD.stopSideQuests()
+	; Update any outstanding global values on the main quest.
+		updateGlobals()
 	; Set the main quest completed stage.
 		DMN_SkyshardsSkyrim.SetStage(200)
 	; Mark the main quest objective as completed.
 		DMN_SkyshardsSkyrim.SetObjectiveCompleted(10)
 	; Complete the main quest.
 		DMN_SkyshardsSkyrim.CompleteQuest()
+	; Stop the main quest.
+		DMN_SkyshardsSkyrim.Stop()
+	; Flag the global variable that controls if all Skyshards have been found.
+		DMN_SkyshardsComplete.SetValue(1 as Int)
 	EndIf
 ; If new Skyshards have been added, and the cap increased.
 ; And if the placeholder objective is the one displayed.
@@ -164,10 +188,32 @@ Function startMainQuest(String questName)
 	If (cnt.GetValue() as Int > 0 && !qst.IsRunning())
 		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The Skyshards in " + questName + " quest is not running! Starting it now.")
 		qst.Start()
-		; updateGlobals()
 		qst.SetStage(10)
 		updateMainQuests()
 	EndIf
+EndFunction
+
+Function startMainQuests()
+; Populate the quest data array for use down below.
+	buildArrays()
+	Int i = mainQuest.Length
+	While (i)
+		i -= 1
+	; We skip the Skyshards main quest as it holds all the tracking data.
+	; For every other main quest, we do the following...
+		If (mainQuest[i] && mainQuest[i] != DMN_Skyshards \
+			&& !mainQuest[i].IsRunning() \
+			&& mainQuestCounter[i].GetValue() as Int > 0)
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Starting the " + \
+			mainQuestName[i] + " main quest.")
+		; Start each main quest and set its starting stage where at
+		; least 1 Skyshard has been found in that quests region.
+			mainQuest[i].Start()
+			mainQuest[i].SetStage(10)
+		EndIf
+	EndWhile
+; Perform any additional updates to the main quests as needed, silently.
+	updateMainQuests(True)
 EndFunction
 
 Function stopMainQuest(String questName)
@@ -196,7 +242,7 @@ Function stopTrackingMainQuests()
 		If (mainQuest[i] && mainQuest[i] != DMN_Skyshards && \
 			mainQuest[i].IsRunning())
 			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Stopping the " + \
-			mainQuestName[i] + " quest.")
+			mainQuestName[i] + " main quest.")
 		; Hide the main quest objective.
 			mainQuest[i].SetObjectiveDisplayed(10, False, True)
 		; Set the quest stage to the "stopped" stage and mark it as completed.

@@ -162,6 +162,10 @@ Message Property DMN_SkyshardsUpdateAnnouncement_v1_5_0 Auto
 FormList Property DMN_SkyshardsBeaconList Auto
 {Stores all the Skyshard beacons. Auto-Fill.}
 
+GlobalVariable Property DMN_SkyshardsComplete Auto
+{Whether or not all Skyshards have been found across all main quests.
+0 = there are Skyshards to be found, 1 = all have been found. Auto-Fill.}
+
 GlobalVariable Property DMN_SkyshardsPersistGodMode Auto
 {Stores whether god mode is persisted after Skyshard activation. Auto-Fill.}
 
@@ -566,15 +570,8 @@ Function updateSkyshards()
 ; Set the default configuration settings.
 	configurationDefaults()
 
-; Update the global variable values on the main quests.
-	DMN_SQN.updateGlobals()
-
-; Check main quest progression to update stages and objectives as needed.
-	DMN_SQN.updateMainQuests(True)
-
-; Update all activated side quest objectives with any new
-; Skyshards added since the last update.
-	DMN_SQD.startSideQuests()
+; Sync quest progress with any changes this update may have brought.
+	DMN_SQD.syncQuestProgress()
 
 ; Updates the user's installed Skyshards version to this running version of Skyshards.
 	DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.

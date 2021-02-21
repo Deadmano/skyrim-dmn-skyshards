@@ -28,10 +28,19 @@ DMN_SkyshardsQuest Property DMN_SQN Auto
 DMN_SkyshardsQuestHelper Property DMN_SQH Auto
 DMN_SkyshardsQuestManager Property DMN_SQM Auto
 
+GlobalVariable Property DMN_SkyshardsComplete Auto
+{Whether or not all Skyshards have been found across all main quests.
+0 = there are Skyshards to be found, 1 = all have been found. Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable. Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
 {Controls which quest system is used. 1 for Full (default), 0 for Lite. Auto-Fill.}
+GlobalVariable[] Property skyshardsCounterList Auto
+{The list of all Skyshard counters.
+Ensure indexes match skyshardsTotalList.}
+GlobalVariable[] Property skyshardsTotalList Auto
+{The list of all Skyshard totals per main quest.
+Ensure indexes match skyshardsCounterList.}
 
 Quest Property helperQuest Auto
 {Set to the helper quest manually. Does not auto-fill.}
@@ -45,10 +54,9 @@ Quest[] Property holdQuestHelper Auto
 {The list of all Skyshard hold quest helpers.}
 Int[] Property skyshardsActivated Auto
 {The list of activated Skyshard counts.}
-GlobalVariable[] Property skyshardsCounterList Auto
-{The list of all Skyshard counters.}
-Int[] Property skyshardsTotal Auto
-{The list of total Skyshard counts.}
+Quest[] Property skyshardsMainQuestList Auto
+{The list of all Skyshard main quests. Ensure indexes match
+either skyshardsCounterList or skyshardsTotalList.}
 String[] Property holdName Auto
 {The name of the hold the Skyshards are found in.}
 
@@ -71,6 +79,10 @@ EndProperty
 ; Starts the helper quest that is responsible for updating all main
 ; and side quests as well as performing any needed maintenance.
 Function beginQuestUpdates(GlobalVariable skyshardCounter)
+	If (!isQuestUpdateNeeded())
+		Return
+	EndIf
+
 	Int i = skyshardsCounterList.Length
 	While(i)
 		i -= 1
@@ -87,10 +99,46 @@ Function disableUpdating()
 	isUpdateNeeded = False	
 EndFunction
 
+Bool Function isQuestUpdateNeeded()
+; Helper function that checks if we need to update the Skyshard quests.
+	debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Checking if any " + \
+	"quests require an update...")
+	Bool isUpdateRequired = False
+	Int i = skyshardsCounterList.Length
+
+	While(i && !isUpdateRequired)
+	; Loop through each Skyshard counter and compare it to the total for
+	; that specific counter and if they don't match flag an update!
+		i -= 1
+		Int counterValueCap = skyshardsTotalList[i].GetValue() as Int
+		Int counterValueCurrent = skyshardsCounterList[i].GetValue() as Int
+		If (counterValueCurrent < counterValueCap)
+			isUpdateRequired = True
+		EndIf
+	; Handle an edge case where quest requirements could have been met but
+	; the quests were not updated and completed. Loops through each main quest
+	; and also compares the counter totals to decide if an update is needed.
+		If (skyshardsMainQuestList[i] && skyshardsMainQuestList[i].IsRunning() \
+			&& counterValueCurrent == counterValueCap)
+			isUpdateRequired = True
+		EndIf
+	EndWhile
+
+	If (isUpdateRequired)
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: One or more main " + \
+		"quests require an update!")
+	Else
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: No quests " + \
+		"require an update.")
+	EndIf
+	Return isUpdateRequired
+EndFunction
+
 ; Ensures all the helper quests responsible for the side quests are started.
 Function startSideQuests()
 ; Runs only if we are using the Full quest system.
-	If (DMN_SkyshardsQuestSystem.GetValue() as Int == 1)
+	If (DMN_SkyshardsQuestSystem.GetValue() as Int == 1 \
+		&& DMN_SkyshardsComplete.GetValue() as Int != 1)
 		; Log the time the function started running.
 		Float fStart = GetCurrentRealTime()
 		; Log the time the function stopped running.
@@ -166,6 +214,81 @@ EndFunction
 
 Function stopTrackingMainQuests()
 	DMN_SQN.stopTrackingMainQuests()
+EndFunction
+
+Function syncQuestProgress()
+; Helper function called by config after an update to ensure all quest
+; progress is synced up with any changes that were made.
+
+If (!isQuestUpdateNeeded())
+	Return
+EndIf
+
+; Update the global variable values on the main quests.
+	DMN_SQN.updateGlobals()
+
+; Check main quest progression to update stages and objectives as needed.
+	DMN_SQN.updateMainQuests(True)
+
+; Update all activated side quest objectives with any new
+; Skyshards added since the last update.
+	startSideQuests()
+EndFunction
+
+; Helper function to switch between the full and lite quest system.
+; Accepts an integer. 1 = full quest system. 0 = lite quest system.
+Function switchQuestSystem(Int questSystem)
+	Int currentQuestSystem = DMN_SkyshardsQuestSystem.GetValue() as Int
+
+; If no change is needed to the quest system due to a duplicate choice
+; being made, then simply exit out of the function early.
+	If (currentQuestSystem == questSystem)
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: The selected " + \
+		"quest system matches the current one. Skipping switching systems...")
+		Return
+	EndIf
+
+	If (questSystem == 1)
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Switching to the " + \
+		"full quest system...")
+		DMN_SkyshardsQuestSystem.SetValue(1 as Int)
+
+		If (isQuestUpdateNeeded())
+			startSideQuests()
+			disableUpdating()
+			startMainQuests()
+		EndIf
+
+		If (DMN_SkyshardsQuestSystem.GetValue() as Int == 1)
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Successfully " + \
+			"switched to the full quest system!")
+		Else
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: An unknown " + \
+			"error occurred while attempting to switch quest systems!")
+		EndIf
+	ElseIf (questSystem == 0)
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Switching to the " + \
+		"lite quest system...")
+		DMN_SkyshardsQuestSystem.SetValue(0 as Int)
+
+		; Disable updating so that the side quests don't trigger updates
+		; when the helper quests are cycled to update their objectives.
+		disableUpdating()
+		stopTrackingSideQuests()
+		startMainQuests()
+
+		If (DMN_SkyshardsQuestSystem.GetValue() as Int == 0)
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Successfully " + \
+			"switched to the lite quest system!")
+		Else
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: An unknown " + \
+			"error occurred while attempting to switch quest systems!")
+		EndIf
+	EndIf
+EndFunction
+
+Function startMainQuests()
+	DMN_SQN.startMainQuests()
 EndFunction
 
 Function updateMainQuests()

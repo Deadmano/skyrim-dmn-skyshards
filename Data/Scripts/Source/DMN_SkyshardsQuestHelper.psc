@@ -23,21 +23,22 @@ DMN_SkyshardsQuest Property DMN_SQN Auto
 DMN_SkyshardsQuestData Property DMN_SQD Auto
 DMN_SkyshardsQuestManager Property DMN_SQM Auto
 
+GlobalVariable Property DMN_SkyshardsComplete Auto
+{Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsCountActivated Auto
 {Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsCountTotal Auto
 {Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Auto-Fill.}
-GlobalVariable Property DMN_SkyshardsSkyrimCountActivated Auto
-{Auto-Fill.}
-GlobalVariable Property DMN_SkyshardsDLC01CountActivated Auto
+GlobalVariable Property DMN_SkyshardsQuestSystem Auto
 {Auto-Fill.}
 
 Event OnInit()
 	If (DMN_SQD.currentSkyshard && \
 		DMN_SkyshardsCountActivated.GetValue() as Int \
-		<= DMN_SkyshardsCountTotal.GetValue() as Int)
+		< DMN_SkyshardsCountTotal.GetValue() as Int \
+		&& DMN_SkyshardsComplete.GetValue() as Int != 1)
 		updateQuests()
 	Else
 		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: The quest system " + \
@@ -60,23 +61,14 @@ Function updateQuests()
 	debugNotificationAndTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
 	"Updating quest progress...\n\n")
 
-; Check if the Skyshard activated is from Skyrim.
-	If (SkyshardCounter == DMN_SkyshardsSkyrimCountActivated)
-		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You " + \
-		"activated a Skyrim Skyshard!")
+; Update global variables. Must be done first so that the below quests
+; are able to identify the Skyshard and update correctly.
+	skyshardCounter.Mod(1 as Int)
+	DMN_SkyshardsCountActivated.Mod(1 as Int)
 
-	; Check if the Skyshards in Skyrim quest is running,
-	; and if it is not then start it.
-		DMN_SQN.startMainQuest("Skyrim")
-
-; Check if the Skyshard activated is from DLC01 (Dawnguard).
-	ElseIf (SkyshardCounter == DMN_SkyshardsDLC01CountActivated)
-		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: You " + \
-		"activated a Dawnguard Skyshard!")
-		
-	; Add DLC01 start quest here.
-		; DMN_SQN.startMainQuest("Dawnguard")
-	EndIf
+; Start any main quests that aren't currently running but
+; have Skyshards recorded as absorbed already.
+	DMN_SQN.startMainQuests()
 
 ; Begin the process of updating the Skyshards side quests
 ; to handle the Skyshard that was just absorbed.
@@ -91,7 +83,8 @@ Function updateQuests()
 	Float fTimeStarted = GetCurrentRealTime()
 ; The amount of time elapsed since we started tracking.
 	Float fTimePassed
-	While (!isSideQuestUpdateCompleted && fTimePassed < 5)
+	While (DMN_SkyshardsQuestSystem.GetValue() as Int == 1 \
+	&& !isSideQuestUpdateCompleted && fTimePassed < 5)
 	; Update the time with each attempt.
 		fTimePassed = GetCurrentRealTime() - fTimeStarted
 	; The array of all side quests and their update status.

@@ -43,8 +43,7 @@ FormList Property DMN_SkyshardsBeaconListMCM Auto
 {Stores all user-disabled Skyshard Beacons from the MCM. Auto-Fill.}
 
 GlobalVariable Property DMN_SkyshardsActivatedCounter Auto
-{Set this to the ACTIVATED global variable to which DLC/Mod this Skyshard belongs to.
-So DMN_SkyshardsSkyrimCountActivated will increment the Skyrim Skyshard counter.}
+{Set this to the ACTIVATED global variable to which DLC/Mod this Skyshard belongs to.}
 
 GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 {The current amount of Skyshards the player has activated throughout Skyrim and
@@ -53,26 +52,14 @@ other DLCs/Mods which resets once it reaches DMN_SkyshardsCountCap. Auto-Fill.}
 GlobalVariable Property DMN_SkyshardsCountCap Auto
 {The amount of Skyshard absorptions required before gaining a perk point. Auto-Fill.}
 
-GlobalVariable Property DMN_SkyshardsCountActivated Auto
-{The total amount of Skyshards the player has activated throughout Skyrim and other DLCs/Mods. Auto-Fill.}
-
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
 {The amount of perk points awarded to the player after absorbing DMN_SkyshardsCountCap. Auto-Fill.}
-
-GlobalVariable Property DMN_SkyshardsSkyrimCountActivated Auto
-{Tracks Skyrim Skyshard activations. Set on Skyshard object if in Skyrim worldspace. Auto-Fill.}
-
-GlobalVariable Property DMN_SkyshardsDLC01CountActivated Auto
-{Tracks DLC01 Skyshard activations. Set on Skyshard object if in DLC01 worldspace. Auto-Fill.}
 
 GlobalVariable Property DMN_SkyshardsDebug Auto
 {Set to the debug global variable. Auto-Fill.}
 
 GlobalVariable Property DMN_SkyshardsShowStaticSkyshards Auto
 {Whether or not Skyshard statics are displayed. 1 displayed, 0 hidden.}
-
-Message Property DMN_SkyshardAbsorbedMessage Auto
-{The message shown to the player as a notification when a Skyshard is absorbed. Auto-Fill.}
 
 Static Property DMN_SkyshardActivated Auto
 {Static version of the Skyshard, switched out when the player activates and absorbs a Skyshard. Auto-Fill.}
@@ -97,11 +84,8 @@ Auto State Absorbing
 			Wait(1)
 			Disable(True) ; Disable the Skyshard Activator WITH a fade-out.
 
-		; Update global variables. Must be done first so that the below quests are able
-		; to identify the Skyshard and update correctly.
+		; Update the current amount of Skyshards absorbed.
 			DMN_SkyshardsCountCurrent.Mod(1 as Int)
-			DMN_SkyshardsActivatedCounter.Mod(1 as Int)
-			DMN_SkyshardsCountActivated.Mod(1 as Int)
 
 		; Begin the process of updating the quests.
 			DMN_SQD.beginQuestUpdates(DMN_SkyshardsActivatedCounter)
@@ -122,7 +106,6 @@ Auto State Absorbing
 		; Show the absorb message once we've allocated the Skyshard counters
 		; AND if the user has chosen not to opt out of point distribution.
 		If (DMN_SkyshardsPerkPoints.GetValue() as Int != 0)
-			; DMN_SkyshardAbsorbedMessage.Show()
 			Notification("Skyshard absorbed! Pieces collected: " + \
 			absorbedSkyshards + "/" + absorbCap + ".")
 		EndIf
@@ -143,13 +126,13 @@ Auto State Absorbing
 
 		; So long as we have enough absorbed Skyshards, give perk points.
 			If (absorbedSkyshards >= absorbCap && perkPointsGiven != 0)
-			While (absorbedSkyshards >= absorbCap)
-				AddPerkPoints(perkPointsGiven)
-				absorbedSkyshards = absorbedSkyshards - absorbCap
-				DMN_SkyshardsCountCurrent.SetValue(absorbedSkyshards)
-			EndWhile
-			Notification("Skyshards: I have absorbed enough Skyshards to " + \
-			" advance my skills!")
+				While (absorbedSkyshards >= absorbCap)
+					AddPerkPoints(perkPointsGiven)
+					absorbedSkyshards = absorbedSkyshards - absorbCap
+					DMN_SkyshardsCountCurrent.SetValue(absorbedSkyshards)
+				EndWhile
+				Notification("Skyshards: I have absorbed enough Skyshards to " + \
+				"advance my skills!")
 		; Else the user had turned off perk point distribution at some point.
 			ElseIf(perkPointsGiven == 0)
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: " + \
