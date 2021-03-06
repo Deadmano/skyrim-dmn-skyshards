@@ -81,8 +81,6 @@ Auto State Absorbing
 				disabledSkyshardStatic.EnableNoWait() ; Used to enable the Skyshard Static WITHOUT a fade-in.
 			EndIf
 			DMN_SkyshardsAbsorbedStaticList.AddForm(disabledSkyshardStatic) ; Add the Skyshard Static to a FormList for future use.
-			Wait(1)
-			Disable(True) ; Disable the Skyshard Activator WITH a fade-out.
 
 		; Update the current amount of Skyshards absorbed.
 			DMN_SkyshardsCountCurrent.Mod(1 as Int)
@@ -95,8 +93,6 @@ Auto State Absorbing
 				DMN_SkyshardsBeaconListMCM.RemoveAddedForm(GetLinkedRef())
 				debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Beacon detected and removed from the MCM beacon FormList.")
 			EndIf
-			Wait(2)
-			GetLinkedRef().Disable(True) ; Disable the Skyshard Beacon with a fade-out.
 
 		; Get the value of the global variables for later use.
 			Int absorbedSkyshards = DMN_SkyshardsCountCurrent.GetValue() as Int
