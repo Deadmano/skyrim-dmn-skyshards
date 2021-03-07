@@ -152,13 +152,13 @@ Function showSkyshardBeacons(FormList flt1, FormList flt2, GlobalVariable gVar, 
 		If (toggleState)
 			If (ref2 != None)
 				debugMsg += "\nSkyshards DEBUG: Enabling Beacon: " + ref2
-				ref2.Enable()
+				ref2.Enable(True) ; Fade the beacon in.
 			EndIf
 	; Disable valid beacons.
 		ElseIf (!toggleState)
 			If (ref2 != None)
 				debugMsg += "\nSkyshards DEBUG: Disabling Beacon: " + ref2
-				ref2.Disable()
+				ref2.Disable(True) ; Fade the beacon out.
 			EndIf
 		EndIf
 		j += 1
