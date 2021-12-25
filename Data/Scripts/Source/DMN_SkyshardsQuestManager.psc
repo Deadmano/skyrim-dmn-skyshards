@@ -20,6 +20,8 @@ Import Utility
 Import DMN_DeadmaniacFunctions
 Import DMN_SkyshardsFunctions
 
+DMN_SkyshardsQuestData Property DMN_SQD Auto
+
 DMN_SkyshardsQuestsEastmarch Property DMN_SQEA Auto
 DMN_SkyshardsQuestsFalkreath Property DMN_SQFA Auto
 DMN_SkyshardsQuestsHaafingar Property DMN_SQHA Auto
@@ -50,55 +52,124 @@ Bool[] Property isEverySideQuestUpdated Hidden
 	EndFunction
 EndProperty
 
-Function updateSideQuestProgress(GlobalVariable debugVariable, Quest holdQuest, Quest holdQuestHelper, String holdName) Global
+GlobalVariable Property debugVariable Hidden
+	GlobalVariable Function get()
+		Return DMN_SQD.DMN_SkyshardsDebug
+	EndFunction
+EndProperty
+
+String[] Property holdName Hidden
+	String[] Function get()
+		Return DMN_SQD.holdName
+	EndFunction
+EndProperty
+
+Quest[] Property holdQuest Hidden
+	Quest[] Function get()
+		Return DMN_SQD.holdQuest
+	EndFunction
+EndProperty
+
+Quest[] Property holdQuestHelper Hidden
+	Quest[] Function get()
+		Return DMN_SQD.holdQuestHelper
+	EndFunction
+EndProperty
+
+Int[] Property holdSkyshardsActivated Hidden
+	Int[] Function get()
+		Return DMN_SQD.holdSkyshardsActivated
+	EndFunction
+EndProperty
+
+Function updateSideQuestProgress(Int holdIndex)
 ; Log the time the function started running.
 	Float fStart = GetCurrentRealTime()
 ; Log the time the function stopped running.
 	Float fStop
-	debugTrace(debugVariable, "Skyshards DEBUG: " + holdName + " side " + \
-	"quest update started.")
+	debugTrace(debugVariable, "Skyshards DEBUG: " + holdName[holdIndex] + \
+	" side quest update started.")
+
 ; Start the helper quest to perform checks on.
-	startQuestSafe(holdQuestHelper)
+	startQuestSafe(holdQuestHelper[holdIndex])
 	Bool startQuest
 	Int i = 0
 	Int j
 	Int k
 	Int l = 0
 ; Loop through each alias attached to the helper quest. 
-	While (holdQuestHelper.GetAlias(i))
-		ObjectReference ref = getQuestAlias(holdQuestHelper, i)
-	 ; If we find a reference that exists and is disabled, do the following...
-		If (ref && ref.IsDisabled())
+	While (holdQuestHelper[holdIndex].GetAlias(i))
+		ObjectReference ref = getQuestAlias(holdQuestHelper[holdIndex], i)
+	; We're looking for a Skyshard that is IgnoringFriendlyHits or disabled.
+	; We use that to determine the amount of absorbed Skyshards for this hold.
+		If (ref && ref.IsDisabled() || ref && ref.IsIgnoringFriendlyHits())
 			k += 1
 			startQuest = True
-		 ; If we found a valid reference and the quest isn't running, do...
-			If (startQuest && !holdQuest.IsRunning())
-			; Start the quest up and set its initial stage.
-				startQuestSafeSetStage(holdQuest)
-			EndIf
 		EndIf
 		i += 1
 	EndWhile
+
+	; If we have already found all the Skyshards for this hold, skip updating.
+	If (i == holdSkyshardsActivated[holdIndex])
+		fStop = GetCurrentRealTime()
+		debugTrace(debugVariable, "Skyshards DEBUG: All " + \
+		holdName[holdIndex] + " Skyshards have already been found. " + \
+		"Completed in " + (fStop - fStart) + " seconds.")
+		Return
+	EndIf
+
+; If we found a valid reference and the quest isn't running...
+	If (i != holdSkyshardsActivated[holdIndex] && \
+		startQuest && !holdQuest[holdIndex].IsRunning())
+	; Start the quest up and set its initial stage.
+		startQuestSafeSetStage(holdQuest[holdIndex])
+	EndIf
+
+; Update the stored Skyshard activations for this hold.
+	If (i != holdSkyshardsActivated[holdIndex])
+		DMN_SQD.holdSkyshardsActivated[holdIndex] = k
+	EndIf
+
 ; Loop through each alias attached to the helper quest.
-	While (holdQuestHelper.GetAlias(l))
-		ObjectReference ref = getQuestAlias(holdQuestHelper, l)
+	While (holdQuestHelper[holdIndex].GetAlias(l))
+		ObjectReference ref = getQuestAlias(holdQuestHelper[holdIndex], l)
 	; So long as the quest is running, do the following...
-		If (holdQuest.IsRunning())
+		If (holdQuest[holdIndex].IsRunning())
 		; Set and display the objective for each Skyshard.
-			setQuestObjectiveDisplayed(ref, holdQuest, l, j, debugVariable, \
-			holdName)
+			setQuestObjectiveDisplayed(ref, holdQuest[holdIndex], l, \
+			j, debugVariable, holdName[holdIndex])
 		; Mark specific objectives as complete for any found Skyshards.
-			setQuestObjectiveCompleted(ref, holdQuest, l, j, debugVariable, \
-			holdName)
+			setQuestObjectiveCompleted(ref, holdQuest[holdIndex], l, \
+			j, debugVariable, holdName[holdIndex])
 		EndIf
 		l += 1
 	EndWhile
 	startQuest = False
-	debugTrace(debugVariable, "Skyshards DEBUG: The amount of " + holdName + \
-	" Skyshards found: " + k + "/" + i + ".")
-	setQuestStage(holdQuest, k, debugVariable, holdName)
-	stopQuestSafe(holdQuestHelper)
+	debugTrace(debugVariable, "Skyshards DEBUG: The amount of " + \
+	holdName[holdIndex] + " Skyshards found: " + k + "/" + i + ".")
+	If (i != holdSkyshardsActivated[holdIndex] && \
+		holdQuest[holdIndex].IsRunning())
+		setQuestStage(holdQuest[holdIndex], k, \
+		debugVariable, holdName[holdIndex])
+	EndIf
+	stopQuestSafe(holdQuestHelper[holdIndex])
+	; Check to see if all Skyshards for a hold have been found.
+	If (i == holdSkyshardsActivated[holdIndex] && \
+		holdQuest[holdIndex].IsRunning())
+	; If all have been found complete the side quest and stop tracking it.
+		debugTrace(debugVariable, "Skyshards DEBUG: All Skyshards in " + \
+		holdName[holdIndex] + " found! Marking quest as complete now.")
+		holdQuest[holdIndex].CompleteAllObjectives()
+	; Set the side quest stage to the final stage and mark it as completed.
+		setQuestStageFinal(holdQuest[holdIndex], \
+		holdQuestHelper[holdIndex], debugVariable, \
+		holdName[holdIndex])
+	; Complete the side quest and stop tracking it.
+		holdQuest[holdIndex].CompleteQuest()
+		holdQuest[holdIndex].Stop()
+	EndIf
 	fStop = GetCurrentRealTime()
-	debugTrace(debugVariable, "Skyshards DEBUG: " + holdName + " side " + \
-	"quest updated in " + (fStop - fStart) + " seconds.")
+	debugTrace(debugVariable, "Skyshards DEBUG: " + \
+	holdName[holdIndex] + " side " + "quest updated in " + \
+	(fStop - fStart) + " seconds.")
 EndFunction

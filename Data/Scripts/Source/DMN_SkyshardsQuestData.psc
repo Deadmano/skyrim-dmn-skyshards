@@ -52,8 +52,8 @@ Quest[] Property holdQuest Auto
 {The list of all Skyshard hold quests.}
 Quest[] Property holdQuestHelper Auto
 {The list of all Skyshard hold quest helpers.}
-Int[] Property skyshardsActivated Auto
-{The list of activated Skyshard counts.}
+Int[] Property holdSkyshardsActivated Auto
+{The list of activated Skyshard counts per hold.}
 Quest[] Property skyshardsMainQuestList Auto
 {The list of all Skyshard main quests. Ensure indexes match
 either skyshardsCounterList or skyshardsTotalList.}
@@ -176,12 +176,12 @@ Function stopSideQuests()
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Completing hold quests...")
 	While (i)
 		i -= 1
-	; Complete all running side-quest objectives.
+	; Complete all running side quest objectives.
 		If (holdQuest[i].IsRunning())
 			holdQuest[i].CompleteAllObjectives()
-		; Set the side-quest stage to the final stage and mark it as completed.
+		; Set the side quest stage to the final stage and mark it as completed.
 			setQuestStageFinal(holdQuest[i], holdQuestHelper[i], DMN_SkyshardsDebug, holdName[i])
-		; Complete the side-quest and stop tracking it.
+		; Complete the side quest and stop tracking it.
 			holdQuest[i].CompleteQuest()
 			holdQuest[i].Stop()
 		EndIf
@@ -195,15 +195,15 @@ Function stopTrackingSideQuests()
 	"Stopping hold quests...")
 	While (i)
 		i -= 1
-	; Hide running side-quest objectives and stop them.
+	; Hide running side quest objectives and stop them.
 		If (holdQuest[i].IsRunning())
-		; Hide the side-quest objectives.
+		; Hide the side quest objectives.
 			hideQuestObjective(holdQuest[i], holdQuestHelper[i], DMN_SkyshardsDebug, holdName[i])
-		; Set the side-quest stage to the "stopped" stage and mark it as completed.
+		; Set the side quest stage to the "stopped" stage and mark it as completed.
 			holdQuest[i].SetStage(500)
 			holdQuest[i].SetObjectiveDisplayed(500)
 			holdQuest[i].SetObjectiveCompleted(500)
-		; Complete the side-quest and stop tracking it.
+		; Complete the side quest and stop tracking it.
 			holdQuest[i].CompleteQuest()
 			holdQuest[i].Stop()
 		EndIf

@@ -327,7 +327,7 @@ Function setQuestObjectiveDisplayed(ObjectReference ref, Quest qst, Int enum1, I
 EndFunction
 
 Function setQuestObjectiveCompleted(ObjectReference ref, Quest qst, Int enum1, Int enum2, GlobalVariable gVar, String holdName) Global
-	If (ref && ref.IsDisabled())
+	If (ref && ref.IsDisabled() || ref && ref.IsIgnoringFriendlyHits())
 		enum2 = 10 * (1+enum1)
 		If (!qst.IsObjectiveCompleted(enum2))
 			qst.SetObjectiveCompleted(enum2)
