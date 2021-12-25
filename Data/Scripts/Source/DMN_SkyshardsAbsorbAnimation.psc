@@ -38,10 +38,13 @@ VisualEffect Property DMN_SkyshardsAbsorbedVFX Auto
 Bool isAnimationPlaying
 
 Event OnActivate(ObjectReference AbsorbActor)
-	; Ignore any further activation attempts on the same Skyshard.
+; Ignore any further activation attempts on the same Skyshard.
 	If (isAnimationPlaying)
 		Return
 	EndIf
+
+; Mark this Skyshard as being absorbed using IgnoreFriendlyHits.
+	Self.IgnoreFriendlyHits(True)
 
 	If (AbsorbActor == PlayerREF)
 		Int godMode =  DMN_SC.DMN_SkyshardsPersistGodMode.GetValue() as Int
@@ -64,23 +67,25 @@ Event OnActivate(ObjectReference AbsorbActor)
 		Wait(3.0)
 		SendAnimationEvent(AbsorbActor, "MLh_SpellReady_event")
 		Wait(2.0)
+	; Disable the skyshard activator with a fade-out.
+		Disable(True)
+	; Resume any combat the player may be in and enable their movement.
+		disableControl("fighting", False)
+		disableControl("movement", False)
 	; Stops the visual effect and shader on the player and ends the animation.
 		DMN_SkyshardsAbsorbingFX.Stop(AbsorbActor)
 		DMN_SkyshardsAbsorbedVFX.Stop(AbsorbActor)
 		SendAnimationEvent(AbsorbActor, "Ritualspellout")
+	; Disable the skyshard beacon with a fade-out.
+		GetLinkedRef().Disable(True)
 	; Disable god mode if it wasn't enabled by the player manually.
 		If (godMode == 0)
 			SetGodMode(False)
 		EndIf
-	; Resume any combat the player may be in and enable their movement.
-		disableControl("fighting", False)
-		disableControl("movement", False)
 		Notification("I feel the power of the Skyshard coursing through me " \
 		+ "as I absorb it!")
-	; Disable the skyshard beacon with a fade-out.
-		GetLinkedRef().Disable(True)
-	; Disable the skyshard activator with a fade-out.
-		Disable(True)
+	; We can now clean up this Skyshard as absorption is complete.
+		Self.IgnoreFriendlyHits(False)
 		isAnimationPlaying = False
 	EndIf
 EndEvent
