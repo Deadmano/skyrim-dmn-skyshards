@@ -64,20 +64,20 @@ Event OnActivate(ObjectReference AbsorbActor)
 		DMN_SkyshardsAbsorbedVFX.Play(AbsorbActor)
 	; Adds an absorbing visual effect on the player.
 		DMN_SkyshardsAbsorbingFX.Play(AbsorbActor)
-		Wait(3.0)
+		Wait(2.6)
 		SendAnimationEvent(AbsorbActor, "MLh_SpellReady_event")
-		Wait(2.0)
+		Wait(2.5)
+		SendAnimationEvent(AbsorbActor, "Ritualspellout")
 	; Disable the skyshard activator with a fade-out.
 		Disable(True)
 	; Resume any combat the player may be in and enable their movement.
-		disableControl("fighting", False)
 		disableControl("movement", False)
+		disableControl("fighting", False)
+	; Disable the skyshard beacon with a fade-out.
+		GetLinkedRef().Disable(True)
 	; Stops the visual effect and shader on the player and ends the animation.
 		DMN_SkyshardsAbsorbingFX.Stop(AbsorbActor)
 		DMN_SkyshardsAbsorbedVFX.Stop(AbsorbActor)
-		SendAnimationEvent(AbsorbActor, "Ritualspellout")
-	; Disable the skyshard beacon with a fade-out.
-		GetLinkedRef().Disable(True)
 	; Disable god mode if it wasn't enabled by the player manually.
 		If (godMode == 0)
 			SetGodMode(False)
