@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -14,44 +14,78 @@
 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ScriptName DMN_SkyshardsAbsorbAnimation Extends ObjectReference  
-{Adds an animation sequence to the Skyshard activaton.}
-; Credit goes to Dragon Soul Absorb More Glorious (DSAMG) for the ritual animation script.
+{Adds an animation sequence to the Skyshard activation.}
+; Credit goes to Dragon Soul Absorb More Glorious (DSAMG) for the ritual
+; animation script.
 
 Import Debug
 Import Game
 Import Utility
+Import DMN_DeadmaniacFunctions
+
+DMN_SkyshardsConfig Property DMN_SC Auto
+{Set to the updater quest to access the properties on it.}
 
 Actor Property PlayerREF Auto
+{The player reference we will be checking for. Auto-Fill}
 EffectShader Property DMN_SkyshardsAbsorbingFX Auto
-{Auto-Fill.}
+{The absorbing visual effect added to the player during animation. Auto-Fill.}
+Sound Property DMN_SkyshardsAbsorbSM Auto
+{The sound played during the absorb animation. Auto-Fill.}
 VisualEffect Property DMN_SkyshardsAbsorbedVFX Auto
-{Auto-Fill.}
+{The blue aura added to the player during animation. Auto-Fill.}
+
+Bool isAnimationPlaying
 
 Event OnActivate(ObjectReference AbsorbActor)
+; Ignore any further activation attempts on the same Skyshard.
+	If (isAnimationPlaying)
+		Return
+	EndIf
+
+; Mark this Skyshard as being absorbed using IgnoreFriendlyHits.
+	Self.IgnoreFriendlyHits(True)
+
 	If (AbsorbActor == PlayerREF)
+		Int godMode =  DMN_SC.DMN_SkyshardsPersistGodMode.GetValue() as Int
+		isAnimationPlaying = True
+	; Disable any combat the player may be in as well as their movement.
+		disableControl("fighting")
+		disableControl("movement")
+	; Enable god mode during the animation sequence, if god mode is not enabled.
+		If (godMode == 0)
+			SetGodMode(True)
+		EndIf
+	; Play the absorbing sound.
+		DMN_SkyshardsAbsorbSM.Play(Self)
+	; Play the absorbing animation sequences.
+		SendAnimationEvent(AbsorbActor, "RitualSpellStart")
 	; Adds a blue aura around the player to signify the absorption.
 		DMN_SkyshardsAbsorbedVFX.Play(AbsorbActor)
-	; Plays the absorbing visual effect on the player.
+	; Adds an absorbing visual effect on the player.
 		DMN_SkyshardsAbsorbingFX.Play(AbsorbActor)
-		DisablePlayerControls(1,1,1,0,1,1,1,1,0) ; 1 = enabled, 0 = disabled: Movement, Combat, POV Switch, Looking, Sneaking, Menu, Activation, Journal Tabs, DisablePOVType (0 = Script).
-		SetGodMode(True)
-		SendAnimationEvent(AbsorbActor, "RitualSpellStart")
-		Wait(2.0)
-	EndIf
-
-	If (AbsorbActor == PlayerREF)
-		Wait(1.0)
+		Wait(2.6)
 		SendAnimationEvent(AbsorbActor, "MLh_SpellReady_event")
-		Wait(2.0)
-	EndIf
-
-	If (AbsorbActor == PlayerREF)
-	; Stops the visual effect and shader on the player.	
+		Wait(2.5)
+		SendAnimationEvent(AbsorbActor, "Ritualspellout")
+	; Disable the skyshard activator with a fade-out.
+		Disable(True)
+	; Resume any combat the player may be in and enable their movement.
+		disableControl("movement", False)
+		disableControl("fighting", False)
+	; Disable the skyshard beacon with a fade-out.
+		GetLinkedRef().Disable(True)
+	; Stops the visual effect and shader on the player and ends the animation.
 		DMN_SkyshardsAbsorbingFX.Stop(AbsorbActor)
 		DMN_SkyshardsAbsorbedVFX.Stop(AbsorbActor)
-		SendAnimationEvent(AbsorbActor, "Ritualspellout")
-		SetGodMode(False)
-		EnablePlayerControls()
-		Notification("I feel the power of the Skyshard coursing through me as I absorb it!")
+	; Disable god mode if it wasn't enabled by the player manually.
+		If (godMode == 0)
+			SetGodMode(False)
+		EndIf
+		Notification("I feel the power of the Skyshard coursing through me " \
+		+ "as I absorb it!")
+	; We can now clean up this Skyshard as absorption is complete.
+		Self.IgnoreFriendlyHits(False)
+		isAnimationPlaying = False
 	EndIf
 EndEvent

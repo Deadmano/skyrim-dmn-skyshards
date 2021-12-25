@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ ScriptName DMN_SkyshardsConfig Extends Quest
 
 {Skyshards - Configuration Script by Deadmano.}
 ;==============================================
-; Version: 1.5.0
+; Version: 1.6.0
 ;===============
 
 Import DMN_DeadmaniacFunctions
@@ -49,6 +49,25 @@ String DMN_sSkyshardsVersionInstalled
 ; Current Script Version Being Run.
 Int DMN_iSkyshardsVersionRunning
 String DMN_sSkyshardsVersionRunning
+
+; The version of the Skyshards script currently running accessable
+; by other scripts as a property.
+Int Property skyshardsVersion Hidden
+  Int Function get()
+    Return DMN_iSkyshardsVersionRunning
+  EndFunction
+EndProperty
+
+; User's Installed Configurator Script Version.
+Int DMN_iSkyshardsConfiguratorVersionInstalled
+
+; The version of the Skyshards configurator script installed on the player's
+; save accessable by other scripts as a property.
+Int Property skyshardsConfiguratorVersion Hidden
+	Int Function get()
+	  Return DMN_iSkyshardsConfiguratorVersionInstalled
+	EndFunction
+EndProperty
 
 ; The following store the amount of Skyshards
 ; that each version of the mod contains.
@@ -133,35 +152,72 @@ Message Property DMN_SkyshardsUpdateAnnouncement_v1_4_0 Auto
 
 Message Property DMN_SkyshardsUpdateAnnouncement_v1_5_0 Auto
 {The message that is shown to the player for the update to version 1.5.0. Auto-Fill.}
-Message Property DMN_SkyshardsUpdateAnnouncementHandler Auto
-{The message that is shown to the player when multiple updates are detected. Auto-Fill.}
 
 ; END v1.5.0
 ;-------------
 
+; BEGIN v1.6.0
+;-------------
+
+FormList Property DMN_SkyshardsBeaconList Auto
+{Stores all the Skyshard beacons. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsComplete Auto
+{Whether or not all Skyshards have been found across all main quests.
+0 = there are Skyshards to be found, 1 = all have been found. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsPersistGodMode Auto
+{Stores whether god mode is persisted after Skyshard activation. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsShowBeacons Auto
+{Stores whether beacons are enabled or disabled. Auto-Fill.}
+
+GlobalVariable Property DMN_SkyshardsShowMapMarkers Auto
+{Stores whether map markers are enabled or disabled. Auto-Fill.}
+
+Message Property DMN_SkyshardsUpdateAnnouncement_v1_6_0 Auto
+{The message that is shown to the player for the update to version 1.6.0. Auto-Fill.}
+
+; END v1.6.0
+;-------------
+
+Message Property DMN_SkyshardsUpdateAnnouncementHandler Auto
+{The message that is shown to the player when multiple updates are detected. Auto-Fill.}
+
 ; END Update Related Variables and Properties
 ;==============================================
 
+; The following will be run once per game load.
 Event OnInit()
 	preMaintenance() ; Function to run before the main script maintenance.
     Maintenance() ; Function to handle script maintenance.
 EndEvent
 
 Function preMaintenance()
-	Int i = 0
-
 ; Set the total Skyshards found values to the total of each DLC/Mod + base game.
 ; Skipped if an existing value is found. Used to correct v1.0.0 saves only.
+	Int i = 0
+
 	If (i == 0 && DMN_SkyshardsCountActivated.GetValue() as Int == 0)
 	i = (DMN_SkyshardsSkyrimCountActivated.GetValue() as Int) + (DMN_SkyshardsDLC01CountActivated.GetValue() as Int)
 	DMN_SkyshardsCountActivated.SetValue(i as Int)
 	i = 0
 	EndIf
+
+	; Add support for tracking the configurator version to avoid issues where an
+	; outdated configurator won't have new properties. v1.5.0 saves or under.
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int <= 1500)
+		giveConfigurator(DMN_SkyshardsConfigurator)
+		DMN_iSkyshardsConfiguratorVersionInstalled = skyshardsVersion
+	EndIf
+
+	; Check if the player's configurator is up to date.
+	checkConfigurator()
 EndFunction
  
 Function Maintenance()
 ; The latest (current) version of Skyshards. Update this to the version number.
-	parseSkyshardsVersion("1", "5", "0") ; <--- CHANGE! No more than: "9e9", "99", "9".
+	parseSkyshardsVersion("1", "6", "0") ; <--- CHANGE! No more than: "9e9", "99", "9".
 ; ---------------- UPDATE! ^^^^^^^^^^^
 
 ; Skyshards added per version.
@@ -293,103 +349,9 @@ Function updateSkyshards()
 	; Start the main quest up to start tracking existing Skyshards and future ones as well.
 		DMN_SQN.startMainQuest("Skyrim")
 	; Update the quest progress of all previously found Skyshards.
-		DMN_SQD.updateSideQuests()
+		DMN_SQD.startSideQuests()
 	EndIf
 ; END v1.0.0 FIXES/PATCHES
-
-	; // BEGIN VERSION SPECIFIC ANNOUNCEMENT MESSAGES
-	;------------------------------------------------
-	
-	Bool v1_1_0 = False
-	Bool v1_2_0 = False
-	Bool v1_3_0 = False
-	Bool v1_4_0 = False
-	Bool v1_5_0 = False
-	Int updateCount = 0
-	; Change this to the latest update announcement message.
-	Message latestUpdate = DMN_SkyshardsUpdateAnnouncement_v1_5_0
-
-; v1.1.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "1", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1100)
-		Wait(3.0)
-		v1_1_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.2.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "2", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1200)
-		v1_2_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.3.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "3", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1300)
-		v1_3_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.4.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "4", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1400)
-		v1_4_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.5.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "5", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1500)
-		v1_5_0 = True
-		updateCount += 1
-	EndIf
-	
-	If (updateCount > 1)
-	; Detected more than one update happening on this user's save.
-	; Give them the choice to display all updates or only the latest.
-		Int updateAnnouncement = DMN_SkyshardsUpdateAnnouncementHandler.Show()
-	; Show all update announcements.
-		If (updateAnnouncement == 0)
-			If (v1_1_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_1_0.Show()
-			EndIf
-			If (v1_2_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_2_0.Show()
-			EndIf
-			If (v1_3_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_3_0.Show()
-			EndIf
-			If (v1_4_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_4_0.Show()
-			EndIf
-			If (v1_5_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_5_0.Show()
-			EndIf
-	; Show only the latest update announcement.
-		ElseIf (updateAnnouncement == 1)
-			Wait(1.0)
-			latestUpdate.Show()
-		EndIf
-	ElseIf (updateCount == 1)
-	; Detected a single update, we assume it will be the latest one.
-	; Display the latest update announcement message.
-		Wait(1.0)
-		latestUpdate.Show()
-	EndIf
-
-	; // END VERSION SPECIFIC ANNOUNCEMENT MESSAGES
-	;------------------------------------------------
 	
 	; // BEGIN VERSION SPECIFIC UPDATES
 	;----------------------------------
@@ -436,6 +398,61 @@ Function updateSkyshards()
 		Notification("Skyshards: Scholars confirm additional Skyshards have phased into existence! " \
 		+ "(" + DMN_iSkyshardsTotalCurrent + " > " + DMN_iSkyshardsTotal_v1_5_0 + ").")
 	EndIf
+
+; v1.6.0
+;-------
+	; Resolve map markers being turned off every update for those who chose to have map markers enabled.
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
+	DMN_iSkyshardsVersionRunning >= 1600 && DMN_SkyshardsShowMapMarkers.GetValue() != 1) ; Greater Than or Equal To v1.6.0.
+		Int i = DMN_SkyshardsMapMarkersList.GetSize() ; Get the count of map markers in the FormList.
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Checking if map markers were previously enabled...")
+		While (i) ; Stop looping if we can't find a map marker in our FormList.
+			i -= 1
+			ObjectReference ref = DMN_SkyshardsMapMarkersList.GetAt(i) as ObjectReference
+		; Ensure our reference is a map marker in our FormList.
+			If (DMN_SkyshardsMapMarkersList.GetAt(i) == ref)
+			; Check if the map marker is enabled.
+				If (ref.IsEnabled())
+					debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Found a previously enabled map marker! Assuming map markers were previously enabled.")
+					DMN_SkyshardsShowMapMarkers.SetValue(1 as Int) ; Update the newly added global variable to preserve the map markers visibility state.
+					Notification("Skyshards: Your previously enabled map markers have been preserved!")
+					i = 0 ; Stop looking once we've found an enabled map marker.
+				EndIf
+			EndIf
+		EndWhile
+		debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Stopped checking for map markers!")
+	EndIf
+
+	; Persist beacon visibility state to a global variable.
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1600 && DMN_SkyshardsCountActivated.GetValue() != DMN_SkyshardsCountTotal.GetValue()) ; Greater Than or Equal To v1.6.0.
+			Int i = DMN_SkyshardsBeaconList.GetSize() ; Get the count of beacons in the FormList.
+			Bool beaconsDisabled = False
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Checking if there are any beacons still active...")
+			While (i) ; Stop looping if we can't find a beacon in our FormList.
+				i -= 1
+				ObjectReference ref = DMN_SkyshardsBeaconList.GetAt(i) as ObjectReference
+			; Ensure our reference is a beacon in our FormList.
+				If (DMN_SkyshardsBeaconList.GetAt(i) == ref)
+				; Check if the beacon is enabled.
+					If (ref.IsEnabled())
+						debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Found a previously enabled beacon! Assuming beacons were previously enabled.")
+						beaconsDisabled = False ; Update the boolean to specify beacons are indeed enabled.
+						i = 0 ; Stop looking once we've found an enabled beacon.
+				; If we find a disabled beacon, update the boolean.
+					ElseIf (ref.IsDisabled())
+						beaconsDisabled = True
+					EndIf
+				EndIf
+			EndWhile
+			; If our boolean was set to false at any point due to no active beacons being found,
+			; update the newly added global variable to reflect this change.
+			If (beaconsDisabled)
+				debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: No active beacons found despite active Skyshards. Assuming beacons were previously disabled.")
+				DMN_SkyshardsShowBeacons.SetValue(0 as Int)
+			EndIf
+			debugTrace(DMN_SkyshardsDebug, "Skyshards DEBUG: Stopped checking for beacons!")
+		EndIf
 	
 	; // END VERSION SPECIFIC UPDATES
 	;----------------------------------
@@ -446,16 +463,120 @@ Function updateSkyshards()
 ; Set the default configuration settings.
 	configurationDefaults()
 
-; Update the global variable values on the main quests.
-	DMN_SQN.updateGlobals()
-; Update all activated side quest objectives with any new Skyshards added since the last update.
-	DMN_SQD.updateSideQuests()
-; Check main quest progression to update stages and objectives as needed.
-	DMN_SQN.updateMainQuests(True)
+; Sync quest progress with any changes this update may have brought.
+	DMN_SQD.syncQuestProgress()
+
+	; // BEGIN VERSION SPECIFIC ANNOUNCEMENT MESSAGES
+	;------------------------------------------------
+	
+	Bool v1_1_0 = False
+	Bool v1_2_0 = False
+	Bool v1_3_0 = False
+	Bool v1_4_0 = False
+	Bool v1_5_0 = False
+	Bool v1_6_0 = False
+	Int updateCount = 0
+	; Change this to the latest update announcement message.
+	Message latestUpdate = DMN_SkyshardsUpdateAnnouncement_v1_6_0
+
+; v1.1.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "1", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1100)
+		Wait(3.0)
+		v1_1_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.2.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "2", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1200)
+		v1_2_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.3.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "3", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1300)
+		v1_3_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.4.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "4", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1400)
+		v1_4_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.5.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "5", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1500)
+		v1_5_0 = True
+		updateCount += 1
+	EndIf
+
+; v1.6.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1600)
+		v1_6_0 = True
+		updateCount += 1
+	EndIf
+	
+	If (updateCount > 1)
+	; Detected more than one update happening on this user's save.
+	; Give them the choice to display all updates or only the latest.
+		Int updateAnnouncement = DMN_SkyshardsUpdateAnnouncementHandler.Show()
+	; Show all update announcements.
+		If (updateAnnouncement == 0)
+			If (v1_1_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_1_0.Show()
+			EndIf
+			If (v1_2_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_2_0.Show()
+			EndIf
+			If (v1_3_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_3_0.Show()
+			EndIf
+			If (v1_4_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_4_0.Show()
+			EndIf
+			If (v1_5_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_5_0.Show()
+			EndIf
+			If (v1_6_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_6_0.Show()
+			EndIf
+	; Show only the latest update announcement.
+		ElseIf (updateAnnouncement == 1)
+			Wait(1.0)
+			latestUpdate.Show()
+		EndIf
+	ElseIf (updateCount == 1)
+	; Detected a single update, we assume it will be the latest one.
+	; Display the latest update announcement message.
+		Wait(1.0)
+		latestUpdate.Show()
+	EndIf
+
+	; // END VERSION SPECIFIC ANNOUNCEMENT MESSAGES
+	;------------------------------------------------
 
 ; Updates the user's installed Skyshards version to this running version of Skyshards.
 	DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.
 	DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
+
 	Wait(0.1)
 	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
 	Notification("Skyshards: It is now safe to save your game to finalise the update!")
@@ -466,11 +587,45 @@ EndFunction
 
 Function configurationDefaults()
 ; Add (or update) the mod configurator to the player inventory silently.
+; Runs once per install or update.
 	giveConfigurator(DMN_SkyshardsConfigurator)
+; Update the installed configurator version for future comparisons.
+	DMN_iSkyshardsConfiguratorVersionInstalled = skyshardsVersion
 	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Gave the player the latest Skyshards Configurator!")
-	
-; Disable the Skyshard map markers.
-	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Disabling Skyshard map markers...")
-	showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
-	debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Skyshard map markers have been disabled!")
+
+; Disable the Skyshard map markers if players have not previously chosen to display them.
+	If (DMN_SkyshardsShowMapMarkers.GetValue() != 1)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Disabling Skyshard map markers...")
+		showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Skyshard map markers have been disabled!")
+	EndIf
+EndFunction
+
+Function checkConfigurator()
+; Check to see if the player has a configurator in their inventory.
+	If (!hasConfigurator(DMN_SkyshardsConfigurator))
+	; If they don't, give them one.
+		giveConfigurator(DMN_SkyshardsConfigurator)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Did not " + \
+		"detect a configurator. Gave the player a new one.")
+	EndIf
+
+; Check to see if the mod configurator given to the player matches the Skyshards
+; script version running. This is done to ensure any newly added properties to
+; the configurator are accessible.
+	If (skyshardsConfiguratorVersion != skyshardsVersion)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: Detected " + \
+		"an older version of the configurator! Replacing it with the " + \
+		"latest one...")
+	; If the configurator is outdated, give the player a new one.
+		updateConfigurator(skyshardsVersion, skyshardsConfiguratorVersion, \
+		DMN_SkyshardsConfigurator, DMN_SkyshardsDebug)
+	; Then update the installed configurator version for future comparisons.
+		DMN_iSkyshardsConfiguratorVersionInstalled = skyshardsVersion
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The " + \
+		"configurator was updated to the latest version!")
+	ElseIf (skyshardsConfiguratorVersion == skyshardsVersion)
+		debugNotification(DMN_SkyshardsDebug, "Skyshards DEBUG: The " + \
+		"configurator is up to date.")
+	EndIf
 EndFunction

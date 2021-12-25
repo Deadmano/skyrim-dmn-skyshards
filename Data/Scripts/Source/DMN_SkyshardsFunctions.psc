@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -103,15 +103,18 @@ Function showSkyshardStatics(FormList staticList, Bool toggleState) Global
 	While (i) ; Stop looping if we can't find a Skyshard Static in our FormList.
 		i -= 1
 		ObjectReference ref = staticList.GetAt(i) as ObjectReference
-	; Disable found references that are enabled.
-		If (toggleState == False)
-			If (ref.IsEnabled())
-				ref.Disable(True)
-			EndIf
-	; Enable found references that are enabled.
-		ElseIf (toggleState == True)
-			If (ref.IsDisabled())
-				ref.Enable(True)
+	; Ensure our reference is a Skyshard Static in our FormList.
+		If (staticList.GetAt(i) == ref)
+		; Disable found references that are enabled.
+			If (toggleState == False)
+				If (ref.IsEnabled())
+					ref.Disable(True)
+				EndIf
+		; Enable found references that are enabled.
+			ElseIf (toggleState == True)
+				If (ref.IsDisabled())
+					ref.Enable(True)
+				EndIf
 			EndIf
 		EndIf
 	EndWhile
@@ -149,13 +152,13 @@ Function showSkyshardBeacons(FormList flt1, FormList flt2, GlobalVariable gVar, 
 		If (toggleState)
 			If (ref2 != None)
 				debugMsg += "\nSkyshards DEBUG: Enabling Beacon: " + ref2
-				ref2.Enable()
+				ref2.Enable(True) ; Fade the beacon in.
 			EndIf
 	; Disable valid beacons.
 		ElseIf (!toggleState)
 			If (ref2 != None)
 				debugMsg += "\nSkyshards DEBUG: Disabling Beacon: " + ref2
-				ref2.Disable()
+				ref2.Disable(True) ; Fade the beacon out.
 			EndIf
 		EndIf
 		j += 1
@@ -192,6 +195,13 @@ Int Function checkSkyshardQuestAlias(Quest qst)
 	Return j ; The amount of Skyshards absorbed, to update quest objectives.
 EndFunction
 
+; Returns the amount of configurators the player has in their inventory.
+Int Function getConfiguratorCount(Book configurator) Global
+	Actor player = GetPlayer()
+	Int configuratorCount = player.GetItemCount(configurator)
+	Return configuratorCount
+EndFunction
+
 Function giveConfigurator(Book configurator) Global
 ; Save the amount of configurators the player has in their inventory.
 	Actor ref = GetPlayer()
@@ -204,6 +214,21 @@ Function giveConfigurator(Book configurator) Global
 		ref.RemoveItem(configurator, i, True)
 		ref.AddItem(configurator, 1, True)
 	EndIf
+EndFunction
+
+; Returns whether a player has any configurators in their inventory.
+Bool Function hasConfigurator(Book configurator) Global
+	If (getConfiguratorCount(configurator) >= 1)
+		Return True
+	Else
+		Return False
+	EndIf
+EndFunction
+
+Function updateConfigurator(Int skyshardsVersion, Int skyshardsConfiguratorVersion, Book configurator, GlobalVariable gVar) Global
+	debugTrace(gVar, "Skyshards DEBUG: Updating the configurator from version " + skyshardsConfiguratorVersion + " to " + skyshardsVersion + ".")
+	giveConfigurator(configurator)
+	debugTrace(gVar, "Skyshards DEBUG: The configurator was updated to version " + skyshardsVersion + ".")
 EndFunction
 
 Function calculatePerkPoints(GlobalVariable countCurrent, GlobalVariable countCap, GlobalVariable perkPoints, Message msg, GlobalVariable gVar) Global
@@ -235,42 +260,11 @@ Function calculatePerkPoints(GlobalVariable countCurrent, GlobalVariable countCa
 	EndIf
 EndFunction
 
-Function updateQuestProgress(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName, Int skyshardsActivated, Int skyshardsTotal) Global
-	startQuestSafe(qstHelper) ; Start the helper quest to perform checks on.
-	Bool startQuest
-	Int i = 0
-	Int j
-	Int k
-	Int l = 0
-	While (qstHelper.GetAlias(i)) ; Loop through each alias attached to the helper quest. 
-		ObjectReference ref = getQuestAlias(qstHelper, i)
-	 ; If we find a reference that exists and is disabled, do the following...
-		If (ref && ref.IsDisabled())
-			k += 1
-			startQuest = True
-		 ; If we found a valid reference and the quest isn't running, do the following...
-			If (startQuest && !qst.IsRunning())
-				startQuestSafeSetStage(qst) ; Start the quest up and set its initial stage.
-			EndIf
-		EndIf
-		i += 1
-	EndWhile
-	While (qstHelper.GetAlias(l)) ; Loop through each alias attached to the helper quest.
-		ObjectReference ref = getQuestAlias(qstHelper, l)
-		If (qst.IsRunning()) ; So long as the quest is running, do the following...
-		; Set and display the objective for each Skyshard.
-			setQuestObjectiveDisplayed(ref, qst, l, j, gVar, holdName)
-		; Mark specific objectives as complete for any found Skyshards.
-			setQuestObjectiveCompleted(ref, qst, l, j, gVar, holdName)
-		EndIf
-		l += 1
-	EndWhile
-	startQuest = False
-	skyshardsActivated = k ; The value of activated Skyshards, based on each reference found that is disabled.
-	skyshardsTotal = i ; The total value of Skyshards, based on each reference found.
-	debugNotification(gVar, "Skyshards DEBUG: The amount of " + holdName + " Skyshards found: " + skyshardsActivated + "/" + skyshardsTotal)
-	setQuestStage(qst, k, gVar, holdName)
-	stopQuestSafe(qstHelper)
+; Closes the currently open book menu.
+Function closeBookMenu() Global
+	disableControl("menu")
+	Wait(0.1)
+	disableControl("menu", false)
 EndFunction
 
 Function hideQuestObjective(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName) Global
@@ -284,8 +278,8 @@ Function hideQuestObjective(Quest qst, Quest qstHelper, GlobalVariable gVar, Str
 			j = 10 * (1+i)
 			If (qst.IsObjectiveDisplayed(j))
 			; Hide the quest objective that is displayed.
-				qst.SetObjectiveDisplayed(j, False, True)
-				debugNotification(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + j + ") to hidden.")
+				qst.SetObjectiveDisplayed(j, False, False)
+				debugTrace(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + j + ") to hidden.")
 			EndIf
 		EndIf
 		j = 0
@@ -327,17 +321,17 @@ Function setQuestObjectiveDisplayed(ObjectReference ref, Quest qst, Int enum1, I
 		enum2 = 10 * (1+enum1)
 		If (!qst.IsObjectiveDisplayed(enum2))
 			qst.SetObjectiveDisplayed(enum2, True, True)
-			debugNotification(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + enum2 + ") to displayed.")
+			debugTrace(gvar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + enum2 + ") to displayed.")
 		EndIf
 	EndIf
 EndFunction
 
 Function setQuestObjectiveCompleted(ObjectReference ref, Quest qst, Int enum1, Int enum2, GlobalVariable gVar, String holdName) Global
-	If (ref && ref.IsDisabled())
+	If (ref && ref.IsDisabled() || ref && ref.IsIgnoringFriendlyHits())
 		enum2 = 10 * (1+enum1)
 		If (!qst.IsObjectiveCompleted(enum2))
 			qst.SetObjectiveCompleted(enum2)
-			debugNotification(gVar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + enum2 + ") to completed.")
+			debugTrace(gVar, "Skyshards DEBUG: Set " + holdName + " quest objective index (" + enum2 + ") to completed.")
 		EndIf
 	EndIf
 EndFunction
@@ -346,6 +340,31 @@ Function setQuestStage(Quest qst, Int enum, GlobalVariable gVar, String holdName
 	enum = 10 * enum
 	If (qst.GetCurrentStageID() != enum)
 		qst.SetStage(enum)
-		debugNotification(gVar, "Skyshards DEBUG: Set " + holdName + " quest stage index to (" + enum + ").")
+		debugTrace(gVar, "Skyshards DEBUG: Set " + holdName + " quest stage index to (" + enum + ").")
 	EndIf
+EndFunction
+
+Function setQuestStageFinal(Quest qst, Quest qstHelper, GlobalVariable gVar, String holdName) Global
+; Start the helper quest to perform checks on.
+	startQuestSafe(qstHelper)
+	Int i = 0
+; Loop through each alias attached to the helper quest. 
+	While (qstHelper.GetAlias(i))
+		ObjectReference ref = getQuestAlias(qstHelper, i)
+; If we find a reference that exists, do the following...
+		If (ref)
+		; Increment our counter by one that signifies each objective and stage.
+			i += 1
+		EndIf
+	EndWhile
+; To figure out which stage we should set the specific quest to for its final
+; stage we take the amount of objectives displayed and multiple it by 10
+; as we have it so that each new quest stage is 10 up from the last stage.
+	Int stage = 10 * i
+	If (qst.GetCurrentStageID() != stage)
+		qst.SetStage(stage)
+		debugTrace(gVar, "Skyshards DEBUG: Set " + holdName + " quest " + \
+		"stage index to (" + stage + ").")
+	EndIf
+	stopQuestSafe(qstHelper)
 EndFunction

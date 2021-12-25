@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Phillip Stolić
+; Copyright (C) 2021 Phillip Stolić
 ; 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -22,7 +22,10 @@ Import Debug
 Import Utility
 Import DMN_SkyshardsFunctions
 
+DMN_SkyshardsConfig Property DMN_SC Auto
 DMN_SkyshardsQuestData Property DMN_SQD Auto
+
+Book Property DMN_SkyshardsConfigurator Auto
 
 FormList Property DMN_SkyshardsAbsorbedStaticList Auto
 FormList Property DMN_SkyshardsBeaconList Auto
@@ -33,7 +36,11 @@ GlobalVariable Property DMN_SkyshardsCountCap Auto
 GlobalVariable Property DMN_SkyshardsCountCurrent Auto
 GlobalVariable Property DMN_SkyshardsDebug Auto
 GlobalVariable Property DMN_SkyshardsPerkPoints Auto
+GlobalVariable Property DMN_SkyshardsPersistGodMode Auto
 GlobalVariable Property DMN_SkyshardsQuestSystem Auto
+GlobalVariable Property DMN_SkyshardsShowBeacons Auto
+GlobalVariable Property DMN_SkyshardsShowMapMarkers Auto
+GlobalVariable Property DMN_SkyshardsShowStaticSkyshards Auto
 
 Message Property DMN_SkyshardsConfigMenu Auto
 Message Property DMN_SkyshardsConfigMenuBeacons Auto
@@ -45,9 +52,35 @@ Message Property DMN_SkyshardsConfigMenuQuestSystem Auto
 Message Property DMN_SkyshardsConfigMenuStatics Auto
 Message Property DMN_SkyshardsPerkPointDistribution Auto
 
+Event OnActivate(ObjectReference actor)
+	; If the player activates a configurator that was not in their inventory,
+	; then disable it, show the player a message, and then destroy it.
+	Self.Disable()
+	closeBookMenu()
+	MessageBox("To prevent outdated property and/or script issues, and to " + \
+	"ensure proper mod operation, this configurator used directly from the " + \
+	"world was deleted. In the future please use the configurator that is " + \
+	"in your inventory directly.")
+	Self.Delete()
+	; Afterwards, check if a new configurator needs to be given.
+	DMN_SC.checkConfigurator()
+EndEvent
+
 Event OnRead()
-	Wait(0.1)
-	configureMod()
+	closeBookMenu()
+	; Check if the configurator version the player is running is up to date.
+	If (DMN_SC.skyshardsConfiguratorVersion != DMN_SC.skyshardsVersion)
+		; If it isn't, update it.
+		DMN_SC.checkConfigurator()
+		MessageBox("This configurator is outdated and has been removed in " + \
+		"order to update any scripts necessary for the configurator " + \
+		"options to function correctly. Please check your inventory for an " + \
+		"updated one.")
+	Else
+		; Otherwise continue with configuring the mod.
+		Wait(0.1)
+		configureMod()
+	EndIf
 EndEvent
 
 Function configureMod()
@@ -64,6 +97,7 @@ Function configureMod()
 		; Enable Map Markers.
 			Wait(0.1)
 			Notification("Skyshards: Enabling map markers...")
+			DMN_SkyshardsShowMapMarkers.SetValue(1 as Int)
 			showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, True)
 			Wait(0.1)
 			Notification("Skyshards: Map markers have been enabled!")
@@ -71,6 +105,7 @@ Function configureMod()
 		; Disable Map Markers.
 			Wait(0.1)
 			Notification("Skyshards: Disabling map markers...")
+			DMN_SkyshardsShowMapMarkers.SetValue(0 as Int)
 			showSkyshardMapMarkers(DMN_SkyshardsMapMarkersList, False)
 			Wait(0.1)
 			Notification("Skyshards: Map markers have been disabled!")
@@ -88,6 +123,7 @@ Function configureMod()
 		; Enable Beacons.
 			Wait(0.1)
 			Notification("Skyshards: Enabling Skyshard beacons...")
+			DMN_SkyshardsShowBeacons.SetValue(1 as Int)
 			showSkyshardBeacons(DMN_SkyshardsBeaconList, DMN_SkyshardsBeaconListMCM, DMN_SkyshardsDebug, True)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard beacons have been enabled!")
@@ -95,6 +131,7 @@ Function configureMod()
 		; Disable Beacons.
 			Wait(0.1)
 			Notification("Skyshards: Disabling Skyshard beacons...")
+			DMN_SkyshardsShowBeacons.SetValue(0 as Int)
 			showSkyshardBeacons(DMN_SkyshardsBeaconList, DMN_SkyshardsBeaconListMCM, DMN_SkyshardsDebug, False)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard beacons have been disabled!")
@@ -112,6 +149,7 @@ Function configureMod()
 		; Enable Statics.
 			Wait(0.1)
 			Notification("Skyshards: Enabling Skyshard statics...")
+			DMN_SkyshardsShowStaticSkyshards.SetValue(1 as Int)
 			showSkyshardStatics(DMN_SkyshardsAbsorbedStaticList, True)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard statics have been enabled!")
@@ -119,6 +157,7 @@ Function configureMod()
 		; Disable Statics.
 			Wait(0.1)
 			Notification("Skyshards: Disabling Skyshard statics...")
+			DMN_SkyshardsShowStaticSkyshards.SetValue(0 as Int)
 			showSkyshardStatics(DMN_SkyshardsAbsorbedStaticList, False)
 			Wait(0.1)
 			Notification("Skyshards: Skyshard statics have been disabled!")
@@ -134,20 +173,36 @@ Function configureMod()
 		Int choice03 = DMN_SkyshardsConfigMenuQuestSystem.Show()
 		If (choice03 == 0)
 		; Full Quest System.
-			Wait(0.1)
-			Notification("Skyshards: Switching to the Full Quest System...")
-			DMN_SkyshardsQuestSystem.SetValue(1 as Int)
-			DMN_SQD.updateSideQuests()
-			Wait(0.1)
-			Notification("Skyshards: Successfully switched to the Full Quest System!")
+			If (DMN_SkyshardsQuestSystem.GetValue() as Int == 1)
+			; Skip switching the quest system if the choice is
+			; the same as the currently running quest system.
+				Notification("Skyshards: The full quest system is already " + \
+				"being used.")
+			Else
+				Wait(0.1)
+				Notification("Skyshards: Switching to the full quest system...")
+				DMN_SQD.switchQuestSystem(1)
+				Wait(0.1)
+				Notification("Skyshards: Successfully switched to the full " + \
+				"quest system!")
+			EndIf
 		ElseIf (choice03 == 1)
 		; Lite Quest System.
-			Wait(0.1)
-			Notification("Skyshards: Switching to the Lite Quest System...")
-			DMN_SQD.stopSideQuests()
-			DMN_SkyshardsQuestSystem.SetValue(0 as Int)
-			Wait(0.1)
-			Notification("Skyshards: Successfully switched to the Lite Quest System!")
+			If (DMN_SkyshardsQuestSystem.GetValue() as Int == 0)
+			; Skip switching the quest system if the choice is
+			; the same as the currently running quest system.
+				Notification("Skyshards: The lite quest system is already " + \
+				"being used.")
+				GoToState("postConfig")
+				configureMod()
+			Else
+				Wait(0.1)
+				Notification("Skyshards: Switching to the lite quest system...")
+				DMN_SQD.switchQuestSystem(0)
+				Wait(0.1)
+				Notification("Skyshards: Successfully switched to the lite " + \
+				"quest system!")
+			EndIf
 		ElseIf (choice03 == 2)
 		; Return To Main Config Menu.
 			GoToState("postConfig")
@@ -253,7 +308,29 @@ Function configureMod()
 				GoToState("postConfig")
 				configureMod()
 			EndIf
+	; Persist God Mode.
 		ElseIf (choice04 == 2)
+			Wait(0.1)
+			If (DMN_SkyshardsPersistGodMode.GetValue() as Int == 0)
+				Notification("Skyshards: Persisting god mode state...")
+				DMN_SkyshardsPersistGodMode.SetValue(1 as Int)
+				Wait(0.1)
+				Notification("Skyshards: Successfully persisted god mode!")
+			EndIf
+			GoToState("postConfig")
+			configureMod()
+	; Unpersist God Mode.
+		ElseIf (choice04 == 3)
+			Wait(0.1)
+			If (DMN_SkyshardsPersistGodMode.GetValue() as Int == 1)
+				Notification("Skyshards: Unpersisting god mode...")
+				DMN_SkyshardsPersistGodMode.SetValue(0 as Int)
+				Wait(0.1)
+				Notification("Skyshards: Successfully unpersisted god mode!")
+			EndIf
+			GoToState("postConfig")
+			configureMod()
+		ElseIf (choice04 == 4)
 		; Toggle Debugging.
 			Wait(0.1)
 			If (DMN_SkyshardsDebug.GetValue() as Int == 0)
@@ -267,7 +344,12 @@ Function configureMod()
 				Wait(0.1)
 				Notification("Skyshards: Successfully turned debug messages off!")
 			EndIf
-		ElseIf (choice04 == 3)
+		ElseIf (choice04 == 5)
+			; Reset Configurator.
+				Wait(0.1)
+				giveConfigurator(DMN_SkyshardsConfigurator)
+				Notification("Skyshards: A new Skyshard configurator was placed in your inventory.")
+		ElseIf (choice04 == 6)
 		; Return To Main Config Menu.
 			GoToState("postConfig")
 			configureMod()
