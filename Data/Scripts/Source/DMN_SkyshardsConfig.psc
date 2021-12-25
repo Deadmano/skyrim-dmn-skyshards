@@ -352,113 +352,6 @@ Function updateSkyshards()
 		DMN_SQD.startSideQuests()
 	EndIf
 ; END v1.0.0 FIXES/PATCHES
-
-	; // BEGIN VERSION SPECIFIC ANNOUNCEMENT MESSAGES
-	;------------------------------------------------
-	
-	Bool v1_1_0 = False
-	Bool v1_2_0 = False
-	Bool v1_3_0 = False
-	Bool v1_4_0 = False
-	Bool v1_5_0 = False
-	Bool v1_6_0 = False
-	Int updateCount = 0
-	; Change this to the latest update announcement message.
-	Message latestUpdate = DMN_SkyshardsUpdateAnnouncement_v1_6_0
-
-; v1.1.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "1", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1100)
-		Wait(3.0)
-		v1_1_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.2.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "2", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1200)
-		v1_2_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.3.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "3", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1300)
-		v1_3_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.4.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "4", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1400)
-		v1_4_0 = True
-		updateCount += 1
-	EndIf
-	
-; v1.5.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "5", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1500)
-		v1_5_0 = True
-		updateCount += 1
-	EndIf
-
-; v1.6.0
-;-------
-	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
-		DMN_iSkyshardsVersionRunning >= 1600)
-		v1_6_0 = True
-		updateCount += 1
-	EndIf
-	
-	If (updateCount > 1)
-	; Detected more than one update happening on this user's save.
-	; Give them the choice to display all updates or only the latest.
-		Int updateAnnouncement = DMN_SkyshardsUpdateAnnouncementHandler.Show()
-	; Show all update announcements.
-		If (updateAnnouncement == 0)
-			If (v1_1_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_1_0.Show()
-			EndIf
-			If (v1_2_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_2_0.Show()
-			EndIf
-			If (v1_3_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_3_0.Show()
-			EndIf
-			If (v1_4_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_4_0.Show()
-			EndIf
-			If (v1_5_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_5_0.Show()
-			EndIf
-			If (v1_6_0)
-				Wait(1.0)
-				DMN_SkyshardsUpdateAnnouncement_v1_6_0.Show()
-			EndIf
-	; Show only the latest update announcement.
-		ElseIf (updateAnnouncement == 1)
-			Wait(1.0)
-			latestUpdate.Show()
-		EndIf
-	ElseIf (updateCount == 1)
-	; Detected a single update, we assume it will be the latest one.
-	; Display the latest update announcement message.
-		Wait(1.0)
-		latestUpdate.Show()
-	EndIf
-
-	; // END VERSION SPECIFIC ANNOUNCEMENT MESSAGES
-	;------------------------------------------------
 	
 	; // BEGIN VERSION SPECIFIC UPDATES
 	;----------------------------------
@@ -573,9 +466,117 @@ Function updateSkyshards()
 ; Sync quest progress with any changes this update may have brought.
 	DMN_SQD.syncQuestProgress()
 
+	; // BEGIN VERSION SPECIFIC ANNOUNCEMENT MESSAGES
+	;------------------------------------------------
+	
+	Bool v1_1_0 = False
+	Bool v1_2_0 = False
+	Bool v1_3_0 = False
+	Bool v1_4_0 = False
+	Bool v1_5_0 = False
+	Bool v1_6_0 = False
+	Int updateCount = 0
+	; Change this to the latest update announcement message.
+	Message latestUpdate = DMN_SkyshardsUpdateAnnouncement_v1_6_0
+
+; v1.1.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "1", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1100)
+		Wait(3.0)
+		v1_1_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.2.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "2", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1200)
+		v1_2_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.3.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "3", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1300)
+		v1_3_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.4.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "4", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1400)
+		v1_4_0 = True
+		updateCount += 1
+	EndIf
+	
+; v1.5.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "5", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1500)
+		v1_5_0 = True
+		updateCount += 1
+	EndIf
+
+; v1.6.0
+;-------
+	If (DMN_iSkyshardsVersionInstalled.GetValue() as Int < ver3ToInteger("1", "6", "0") && \
+		DMN_iSkyshardsVersionRunning >= 1600)
+		v1_6_0 = True
+		updateCount += 1
+	EndIf
+	
+	If (updateCount > 1)
+	; Detected more than one update happening on this user's save.
+	; Give them the choice to display all updates or only the latest.
+		Int updateAnnouncement = DMN_SkyshardsUpdateAnnouncementHandler.Show()
+	; Show all update announcements.
+		If (updateAnnouncement == 0)
+			If (v1_1_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_1_0.Show()
+			EndIf
+			If (v1_2_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_2_0.Show()
+			EndIf
+			If (v1_3_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_3_0.Show()
+			EndIf
+			If (v1_4_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_4_0.Show()
+			EndIf
+			If (v1_5_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_5_0.Show()
+			EndIf
+			If (v1_6_0)
+				Wait(1.0)
+				DMN_SkyshardsUpdateAnnouncement_v1_6_0.Show()
+			EndIf
+	; Show only the latest update announcement.
+		ElseIf (updateAnnouncement == 1)
+			Wait(1.0)
+			latestUpdate.Show()
+		EndIf
+	ElseIf (updateCount == 1)
+	; Detected a single update, we assume it will be the latest one.
+	; Display the latest update announcement message.
+		Wait(1.0)
+		latestUpdate.Show()
+	EndIf
+
+	; // END VERSION SPECIFIC ANNOUNCEMENT MESSAGES
+	;------------------------------------------------
+
 ; Updates the user's installed Skyshards version to this running version of Skyshards.
 	DMN_iSkyshardsVersionInstalled.SetValue(DMN_iSkyshardsVersionRunning as Int) ; Integer.
 	DMN_sSkyshardsVersionInstalled = DMN_sSkyshardsVersionRunning ; String.
+
 	Wait(0.1)
 	Notification("Skyshards: You are now running version " + DMN_sSkyshardsVersionInstalled + ". Enjoy!")
 	Notification("Skyshards: It is now safe to save your game to finalise the update!")
